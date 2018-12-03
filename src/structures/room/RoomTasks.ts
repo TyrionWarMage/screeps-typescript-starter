@@ -5,8 +5,6 @@ export class DetermineProjectTask extends ATask implements RoomTask {
 
     public act(room: Room): void {
         room.determineNextProject();
-    } 
-
-
+    }
 }
 

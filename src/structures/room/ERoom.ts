@@ -10,7 +10,7 @@ Object.defineProperties(Room.prototype, {
         },
         set(value) {
             this.memory.initiated = value;
-        }        
+        }
     },
     tasks: {
         configurable: true,
@@ -19,7 +19,7 @@ Object.defineProperties(Room.prototype, {
         },
         set(value) {
             this.memory.tasks = value;
-        }    
+        }
     },
     project: {
         configurable: true,
@@ -28,22 +28,22 @@ Object.defineProperties(Room.prototype, {
         },
         set(value) {
             this.memory.project = value;
-        }    
+        }
     }
 });
 
-Room.prototype.initSources = function() {
-    for(const source of this.find(FIND_SOURCES)) {
+Room.prototype.initSources = function () {
+    for (const source of this.find(FIND_SOURCES)) {
         source.init()
     }
 }
 
-Room.prototype.initController = function() {
+Room.prototype.initController = function () {
     const ecoControl = new EconomyController(this);
     ecoControl.init();
 }
 
-Room.prototype.init = function() {
+Room.prototype.init = function () {
     this.tasks = [];
     this.memory.project = {
         name: 'Init',
@@ -58,17 +58,17 @@ Room.prototype.init = function() {
     this.initiated = true;
 }
 
-Room.prototype.preTask = function() {
+Room.prototype.preTask = function () {
     this.setTurnCache();
 
     let isProjectRunning = false;
-    for(const waitElement in this.project.waitfor) {
-        if(this.project.waitfor[waitElement]) {
-            isProjectRunning=true;
+    for (const waitElement in this.project.waitfor) {
+        if (this.project.waitfor[waitElement]) {
+            isProjectRunning = true;
             break;
         }
     }
-    if(!isProjectRunning) {
+    if (!isProjectRunning) {
         this.tasks.push(new DetermineProjectTask());
     }
 }
@@ -77,22 +77,23 @@ Room.prototype.postTask = () => {
     return
 }
 
-Room.prototype.setTurnCache = function() {
-    this.turnCache = {    
-                    creeps:
-                        {my: this.find(FIND_MY_CREEPS),enemy: this.find(FIND_HOSTILE_CREEPS)},
-                    environment:
-                        {sources: this.find(FIND_SOURCES)},   
-                    structure:
-                        {controller: this.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_CONTROLLER}})[0] as StructureController,
-                        spawns: this.find(FIND_MY_SPAWNS) as StructureSpawn[]
-                        }
-                    };
+Room.prototype.setTurnCache = function () {
+    this.turnCache = {
+        creeps:
+            { my: this.find(FIND_MY_CREEPS), enemy: this.find(FIND_HOSTILE_CREEPS) },
+        environment:
+            { sources: this.find(FIND_SOURCES) },
+        structure:
+        {
+            controller: this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_CONTROLLER } })[0] as StructureController,
+            spawns: this.find(FIND_MY_SPAWNS) as StructureSpawn[]
+        }
+    };
 }
 
 Room.prototype.act = AActor.prototype.act
 
-Room.prototype.determineNextProject = function() {
+Room.prototype.determineNextProject = function () {
     const ecoControl = new EconomyController(this);
     ecoControl.getProject();
 }

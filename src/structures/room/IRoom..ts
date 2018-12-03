@@ -6,18 +6,22 @@ interface Room {
     initiated: boolean;
     tasks: RoomTask[];
     turnCache:
-        {creeps:
-            {my: Creep[],
+    {
+        creeps:
+        {
+            my: Creep[],
             enemy: Creep[]
-            },
+        },
         environment:
-            {sources: Source[]
-            }
+        {
+            sources: Source[]
+        },
         structure:
-            {controller: StructureController,
+        {
+            controller: StructureController,
             spawns: StructureSpawn[]
-            }
         }
+    }
     project: Project;
 
     preTask(): void;
@@ -33,7 +37,7 @@ interface Room {
 
 interface Project {
     name: string;
-    waitfor: {[id: string]: boolean}
+    waitfor: { [id: string]: boolean }
 }
 
 interface RoomMemory {

@@ -1,19 +1,23 @@
-import {Worktype,Tasktype} from "utils/Constants"
+import { Worktype } from "utils/Constants"
 
 export interface Project {
     name: string;
     cost: number;
 }
 
-export interface EconomyProject {
+export interface EconomyProject extends Project {
     expectedThroughputIncrease: number;
 }
 
-export interface CreepBuildProject extends Project {
+export interface MultiStepEconomyProject extends EconomyProject {
+    constructionSteps: EconomyProject[];
+    spawnSteps: EconomyProject[];
+}
+
+export interface CreepBuildStep extends Project {
     creepType: Worktype;
 }
 
-export interface HarvesterCreepProject extends CreepBuildProject, EconomyProject {
+export interface HarvesterCreepBuildStep extends CreepBuildStep, EconomyProject {
     source: string;
-    task: Tasktype;
 }
