@@ -10,6 +10,9 @@
     "member-ordering": [false],
     "no-console": [false],
     "no-namespace": [true, "allow-declarations"],
+    "max-classes-per-file": [false, 1],
+    "object-literal-sort-keys": [false],
+    "ordered-imports": [false],
     "variable-name": [
       true,
       "ban-keywords",
