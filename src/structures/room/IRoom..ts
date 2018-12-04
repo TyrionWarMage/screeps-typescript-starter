@@ -1,10 +1,5 @@
-interface RoomTask extends Task {
-    act(room: Room): void;
-}
-
 interface Room {
     initiated: boolean;
-    tasks: RoomTask[];
     turnCache:
     {
         creeps:
@@ -20,12 +15,11 @@ interface Room {
         {
             controller: StructureController,
             spawns: StructureSpawn[]
+            constructionSites: ConstructionSite[]
         }
     }
-    project: Project;
+    project: MultiStepProject;
 
-    preTask(): void;
-    postTask(): void;
     initSources(): void;
     initController(): void;
     init(): void;
@@ -33,16 +27,11 @@ interface Room {
 
     setTurnCache(): void;
     determineNextProject(): void;
-}
-
-interface Project {
-    name: string;
-    waitfor: { [id: string]: boolean }
+    checkProject(): void;
 }
 
 interface RoomMemory {
     initiated: boolean;
-    tasks: RoomTask[];
-    project: Project;
+    project: MultiStepProject;
 }
 

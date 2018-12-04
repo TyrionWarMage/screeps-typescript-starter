@@ -1,9 +1,13 @@
 interface RoomMemory {
     unitConfiguration: {
-        configurations: {[id: number]: UnitConfigEntry,
-                        perSource: {[id: string]: UnitConfigEntry}},
+        configurations: AllUnitConfigurations,
         lastEnergyValue: number
     }
+}
+
+interface AllUnitConfigurations {
+    [id: number]: UnitConfigEntry,
+    perSource: { [id: string]: UnitConfigEntry }
 }
 
 interface UnitConfigEntry {

@@ -77,7 +77,7 @@ export class UnitConfigurationController {
     private getWorkOptions(creepType: Worktype) {
         const workoptions = new Array<BodyPartConstant[]>();
         switch (creepType) {
-            case (Worktype.HARVEST || Worktype.BUILD):
+            case (Worktype.HARVEST):
                 workoptions.push([WORK, WORK, MOVE]);
                 workoptions.push([WORK, CARRY, MOVE]);
                 workoptions.push([CARRY, CARRY, MOVE]);
@@ -96,8 +96,8 @@ export class UnitConfigurationController {
         return this.room.memory.unitConfiguration.configurations.perSource[sourceid];
     }
 
-    public computeHarvesterForSource(source: Source) {
-        const flowFieldEntry = source.memory.navigation.flowField[this.room.turnCache.structure.spawns[0].pos.x][this.room.turnCache.structure.spawns[0].pos.y][0]
+    public computeHarvesterForSource(sourceMemory: SourceMemory) {
+        const flowFieldEntry = sourceMemory.navigation.flowField[this.room.turnCache.structure.spawns[0].pos.x][this.room.turnCache.structure.spawns[0].pos.y][0]
         const newEntry = this.computeWorker(Worktype.HARVEST, 2, this.room.energyCapacityAvailable, flowFieldEntry.dist, flowFieldEntry.cost)
         return newEntry;
     }
@@ -105,7 +105,7 @@ export class UnitConfigurationController {
     public computeAllConfigurations() {
         if (this.room.memory.unitConfiguration.lastEnergyValue !== this.room.energyCapacityAvailable) {
             for (const source of this.room.turnCache.environment.sources) {
-                const newEntry = this.computeHarvesterForSource(source);
+                const newEntry = this.computeHarvesterForSource(source.memory);
                 if (!newEntry.current.modules.equal(this.room.memory.unitConfiguration.configurations.perSource[source.id].current.modules)) {
                     newEntry.version = this.room.memory.unitConfiguration.configurations.perSource[source.id].version + 1;
                 } else {
@@ -156,7 +156,7 @@ export class UnitConfigurationController {
 
         const approxNextCost = determineBodyCost(work);
         const approxNextWorkEntry = this.approximateWork(work, workPerTick, travelDist, travelCost);
-        const approxNextWorkModules = work.map(x => Object.assign({}, x));
+        const approxNextWorkModules = JSON.parse(JSON.stringify(work))
         approxNextWorkModules.sort();
 
         work.splice(-1 * lastAdd, lastAdd);

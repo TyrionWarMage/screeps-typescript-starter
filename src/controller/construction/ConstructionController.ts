@@ -20,7 +20,9 @@ export class ConstructionController {
 
     public createRoadProject(from: RoomPosition, to: RoomPosition, worker: UnitConfigEntry) {
         const path = PathFinder.search(from, to, {
-            swampCost: 1
+            roomCallback: (roomName) => {
+                return this.withoutCreepsCostMatrix;
+            }
         });
         path.path.filter((pos) => {
             return pos.lookFor(LOOK_STRUCTURES).filter((struct) => struct.structureType === STRUCTURE_ROAD).length === 0;

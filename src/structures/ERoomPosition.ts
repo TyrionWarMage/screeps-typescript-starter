@@ -183,5 +183,15 @@ RoomPosition.prototype.computeFlowField = function (maxCost = 100) {
             }
         }
     }
+
+    // correction for integer cost
+    for (let i = 0; i < 50; i++) {
+        for (let j = 0; j < 50; j++) {
+            for (const entry of flowField[i][j]) {
+                entry.cost /= 2
+            }
+        }
+    }
+
     return flowField;
 }

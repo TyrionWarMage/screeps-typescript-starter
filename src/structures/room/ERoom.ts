@@ -1,6 +1,4 @@
-import { AActor } from "utils/AClasses";
 import { EconomyController } from "controller/economy/EconomyController";
-import { DetermineProjectTask } from "./RoomTasks";
 
 Object.defineProperties(Room.prototype, {
     initiated: {
@@ -10,15 +8,6 @@ Object.defineProperties(Room.prototype, {
         },
         set(value) {
             this.memory.initiated = value;
-        }
-    },
-    tasks: {
-        configurable: true,
-        get() {
-            return this.memory.tasks;
-        },
-        set(value) {
-            this.memory.tasks = value;
         }
     },
     project: {
@@ -33,6 +22,9 @@ Object.defineProperties(Room.prototype, {
 });
 
 Room.prototype.initSources = function () {
+    if (Memory.sources === undefined) {
+        Memory.sources = {}
+    }
     for (const source of this.find(FIND_SOURCES)) {
         source.init()
     }
@@ -44,13 +36,10 @@ Room.prototype.initController = function () {
 }
 
 Room.prototype.init = function () {
-    this.tasks = [];
     this.memory.project = {
         name: 'Init',
-        waitfor: {
-            spawn: false,
-            build: false,
-        }
+        constructionSteps: [],
+        spawnSteps: []
     }
     this.initSources();
     this.initController();
@@ -58,23 +47,19 @@ Room.prototype.init = function () {
     this.initiated = true;
 }
 
-Room.prototype.preTask = function () {
-    this.setTurnCache();
-
-    let isProjectRunning = false;
-    for (const waitElement in this.project.waitfor) {
-        if (this.project.waitfor[waitElement]) {
-            isProjectRunning = true;
-            break;
+Room.prototype.checkProject = function () {
+    let isProjectRunning = this.turnCache.structure.constructionSites.length > 0;
+    if (!isProjectRunning) {
+        for (const spawn of this.turnCache.structure.spawns) {
+            if (!spawn.isAvailable()) {
+                isProjectRunning = true;
+                break;
+            }
         }
     }
     if (!isProjectRunning) {
-        this.tasks.push(new DetermineProjectTask());
+        this.determineNextProject();
     }
-}
-
-Room.prototype.postTask = () => {
-    return
 }
 
 Room.prototype.setTurnCache = function () {
@@ -86,14 +71,25 @@ Room.prototype.setTurnCache = function () {
         structure:
         {
             controller: this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_CONTROLLER } })[0] as StructureController,
-            spawns: this.find(FIND_MY_SPAWNS) as StructureSpawn[]
+            spawns: this.find(FIND_MY_SPAWNS) as StructureSpawn[],
+            constructionSites: this.find(FIND_MY_CONSTRUCTION_SITES)
         }
     };
 }
 
-Room.prototype.act = AActor.prototype.act
+Room.prototype.act = function () {
+    if (!this.initiated) {
+        this.init()
+    } else {
+        this.setTurnCache();
+        this.checkProject();
+    }
+}
 
 Room.prototype.determineNextProject = function () {
     const ecoControl = new EconomyController(this);
-    ecoControl.getProject();
+    this.project = ecoControl.getProject();
+    console.log(this + ":" + this.project.name)
+    this.turnCache.structure.spawns[0].memory.spawnQueue = this.turnCache.structure.spawns[0].memory.spawnQueue.concat(this.project.spawnSteps)
 }
+

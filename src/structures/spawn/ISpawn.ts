@@ -1,26 +1,18 @@
-interface SpawnTask extends Task {
-    act(spawn: StructureSpawn): void;
-}
-
 interface StructureSpawn {
     initiated: boolean;
-    tasks: SpawnTask[]; 
+    spawnQueue: CreepBuildStep[];
     preTask(): void;
-    postTask(): void;  
+    postTask(): void;
     init(): void;
     initMemory(): void;
-    act(): void; 
+    act(): void;
+    isAvailable(): boolean;
+    processTask(buildTask: CreepBuildStep): void;
 }
 
 interface SpawnMemory {
     initiated: boolean;
-    tasks: SpawnTask[];
+    spawnQueue: CreepBuildStep[];
     navigation: NavigationMemory;
-    objects:
-        {creeps:
-            {[id:number]: string[]}
-        structures:
-            {[id: number]: string[]}
-        }
 }
 

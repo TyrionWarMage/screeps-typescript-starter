@@ -1,3 +1,6 @@
+import * as Profiler from "Profiler";
+global.Profiler = Profiler.init();
+
 import "structures/ERoomPosition"
 import "structures/EStructure";
 import "structures/room/ERoom";

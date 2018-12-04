@@ -1,12 +1,11 @@
 import { UnitConfigurationController } from "../unit/UnitConfiguration";
-import { HarvesterCreepBuildStep, MultiStepEconomyProject, EconomyProject } from "../projects/IProjects";
-import { Worktype } from "utils/Constants";
 import { ConstructionController } from "../construction/ConstructionController";
+import { HarvesterBuildAction } from "projects/PlanSpace";
 
 export class EconomyController {
     private room: Room;
     private unitConfig: UnitConfigurationController;
-    private constructionController: ConstructionController;
+    public constructionController: ConstructionController;
 
     constructor(room: Room) {
         this.room = room;
@@ -18,37 +17,21 @@ export class EconomyController {
         this.unitConfig.init()
     }
 
-    public computeHarvesterBuildProjects(harvesterConfig: UnitConfig, source: Source) {
-        const maxHarvesters = source.computeMaxHarvesters(harvesterConfig);
-        const projects = [] as MultiStepEconomyProject[]
-        for (let i = 0; i < maxHarvesters; i++) {
-            const step = {
-                name: "Build harvester for " + source.id,
-                source: source.id,
-                creepType: Worktype.HARVEST,
-                cost: harvesterConfig.cost,
-                expectedThroughputIncrease: harvesterConfig.throughput
-            };
-            projects.push({
-                name: step.name,
-                cost: step.cost,
-                expectedThroughputIncrease: step.expectedThroughputIncrease,
-                spawnSteps: [step] as EconomyProject[],
-                constructionSteps: [] as EconomyProject[]
-            });
-        }
-        return projects;
-    }
-
-    public getHarvesterProjects() {
+    public getHarvesterPlanActions() {
+        const planActions = [] as HarvesterBuildAction[];
         this.unitConfig.computeAllConfigurations();
         for (const source of this.room.turnCache.environment.sources) {
             const harvesterConfig = this.unitConfig.getHarvesterConfigurationForSource(source.id);
-            this.computeHarvesterBuildProjects(harvesterConfig.current, source);
+            source.computeMaxHarvesters(harvesterConfig.current);
+            planActions.push(new HarvesterBuildAction(source.id, harvesterConfig.current.cost));
         }
+        return planActions
 
     }
     public getProject() {
-        this.getHarvesterProjects();
+        let actionSpace = [] as PlanAction[];
+        actionSpace = actionSpace.concat(this.getHarvesterPlanActions());
+
+        return actionSpace[0].steps;
     }
 }

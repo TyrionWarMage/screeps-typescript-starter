@@ -1,4 +1,4 @@
-import { AActor } from "utils/AClasses";
+import { Worktype } from "../../utils/Constants"
 
 Object.defineProperties(StructureSpawn.prototype, {
     initiated: {
@@ -8,7 +8,7 @@ Object.defineProperties(StructureSpawn.prototype, {
         },
         set(value) {
             this.memory.initiated = value;
-        }        
+        }
     },
     role: {
         configurable: true,
@@ -19,30 +19,71 @@ Object.defineProperties(StructureSpawn.prototype, {
             this.memory.role = value;
         },
     },
-    tasks: {
+    spawnQueue: {
         configurable: true,
         get() {
-            return this.memory.tasks;
+            return this.memory.spawnQueue;
         },
         set(value) {
-            this.memory.tasks = value;
-        }    
+            this.memory.spawnQueue = value;
+        }
     }
 });
 
-StructureSpawn.prototype.initMemory = function() {
-    this.memory.navigation = {flowField: this.pos.computeFlowField(),
-                            freeNeighbours: this.pos.getWalkableNeighbours().length,
-                            };
-    this.memory.objects = {creeps: {},
-                            structures: {}
-                            };
+StructureSpawn.prototype.initMemory = function () {
+    this.memory.navigation = {
+        flowField: this.pos.computeFlowField(),
+        freeNeighbours: this.pos.getWalkableNeighbours().length,
+    };
+    this.memory.spawnQueue = [];
     this.initiated = true;
 }
 
-StructureSpawn.prototype.init = function() {
-    this.tasks = [];
+const names1 = ["Jackson", "Aiden", "Liam", "Lucas", "Noah", "Mason", "Jayden", "Ethan", "Jacob", "Jack", "Caden", "Logan", "Benjamin", "Michael", "Caleb", "Ryan", "Alexander", "Elijah", "James", "William", "Oliver", "Connor", "Matthew", "Daniel", "Luke", "Brayden", "Jayce", "Henry", "Carter", "Dylan", "Gabriel", "Joshua", "Nicholas", "Isaac", "Owen", "Nathan", "Grayson", "Eli", "Landon", "Andrew", "Max", "Samuel", "Gavin", "Wyatt", "Christian", "Hunter", "Cameron", "Evan", "Charlie", "David", "Sebastian", "Joseph", "Dominic", "Anthony", "Colton", "John", "Tyler", "Zachary", "Thomas", "Julian", "Levi", "Adam", "Isaiah", "Alex", "Aaron", "Parker", "Cooper", "Miles", "Chase", "Muhammad", "Christopher", "Blake", "Austin", "Jordan", "Leo", "Jonathan", "Adrian", "Colin", "Hudson", "Ian", "Xavier", "Camden", "Tristan", "Carson", "Jason", "Nolan", "Riley", "Lincoln", "Brody", "Bentley", "Nathaniel", "Josiah", "Declan", "Jake", "Asher", "Jeremiah", "Cole", "Mateo", "Micah", "Elliot"]
+const names2 = ["Sophia", "Emma", "Olivia", "Isabella", "Mia", "Ava", "Lily", "Zoe", "Emily", "Chloe", "Layla", "Madison", "Madelyn", "Abigail", "Aubrey", "Charlotte", "Amelia", "Ella", "Kaylee", "Avery", "Aaliyah", "Hailey", "Hannah", "Addison", "Riley", "Harper", "Aria", "Arianna", "Mackenzie", "Lila", "Evelyn", "Adalyn", "Grace", "Brooklyn", "Ellie", "Anna", "Kaitlyn", "Isabelle", "Sophie", "Scarlett", "Natalie", "Leah", "Sarah", "Nora", "Mila", "Elizabeth", "Lillian", "Kylie", "Audrey", "Lucy", "Maya", "Annabelle", "Makayla", "Gabriella", "Elena", "Victoria", "Claire", "Savannah", "Peyton", "Maria", "Alaina", "Kennedy", "Stella", "Liliana", "Allison", "Samantha", "Keira", "Alyssa", "Reagan", "Molly", "Alexandra", "Violet", "Charlie", "Julia", "Sadie", "Ruby", "Eva", "Alice", "Eliana", "Taylor", "Callie", "Penelope", "Camilla", "Bailey", "Kaelyn", "Alexis", "Kayla", "Katherine", "Sydney", "Lauren", "Jasmine", "London", "Bella", "Adeline", "Caroline", "Vivian", "Juliana", "Gianna", "Skyler", "Jordyn"]
+
+function getRandomName(prefix: string) {
+    let name;
+    let isNameTaken;
+    let tries = 0;
+    do {
+        const nameArray = Math.random() > .5 ? names1 : names2;
+        name = nameArray[Math.floor(Math.random() * nameArray.length)];
+
+        if (tries > 3) {
+            name += nameArray[Math.floor(Math.random() * nameArray.length)];
+        }
+
+        tries++;
+        isNameTaken = Game.creeps[name] !== undefined;
+    } while (isNameTaken);
+
+    return prefix + " " + name;
+}
+
+StructureSpawn.prototype.processTask = function (buildTask: CreepBuildStep) {
+    console.log(this + buildTask.name);
+    if (buildTask.creepType === Worktype.HARVEST) {
+        const modules = this.room.memory.unitConfiguration.configurations.perSource[(buildTask as HarvesterCreepBuildStep).source].current.modules;
+        const name = getRandomName("Harvester")
+        this.spawnCreep(modules, name, {
+            memory: {
+                workType: Worktype.HARVEST,
+                task: (buildTask as HarvesterCreepBuildStep).source,
+                currentTarget: (buildTask as HarvesterCreepBuildStep).source,
+                movingToTask: true
+            }
+        });
+    }
+}
+
+StructureSpawn.prototype.init = function () {
+    this.spawnQueue = []
     this.initMemory();
+}
+
+StructureSpawn.prototype.isAvailable = function () {
+    return this.spawnQueue.length === 0 && !this.spawning
 }
 
 StructureSpawn.prototype.preTask = () => {
@@ -53,4 +94,11 @@ StructureSpawn.prototype.postTask = () => {
     return
 }
 
-StructureSpawn.prototype.act = AActor.prototype.act
+StructureSpawn.prototype.act = function () {
+    if (!this.initiated) {
+        this.init();
+    }
+    if (!this.spawning && this.spawnQueue.length > 0 && this.spawnQueue[0].cost < this.room.energyAvailable) {
+        this.processTask(this.spawnQueue.shift() as CreepBuildStep);
+    }
+}

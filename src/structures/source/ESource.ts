@@ -1,5 +1,3 @@
-Memory.sources = {}
-
 Object.defineProperties(Source.prototype, {
     memory: {
         configurable: true,
@@ -32,7 +30,8 @@ Source.prototype.init = function () {
         status: {
             hasRoad: false,
             nextContainer: undefined,
-            assignedHarvester: 0
+            assignedHarvester: 0,
+            maxHarvester: 0
         }
     }
 }
@@ -40,5 +39,5 @@ Source.prototype.init = function () {
 Source.prototype.computeMaxHarvesters = function (config: UnitConfig) {
     const maxByThroughput = Math.ceil(this.energyCapacity / config.throughput);
     const maxBySlots = this.memory.navigation.freeNeighbours * Math.ceil((config.travelTime + config.workTime) / config.workTime);
-    return Math.min(maxBySlots, maxByThroughput);
+    this.memory.status.maxHarvester = Math.min(maxBySlots, maxByThroughput);
 }
