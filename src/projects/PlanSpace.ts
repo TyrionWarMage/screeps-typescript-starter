@@ -18,8 +18,9 @@ export class HarvesterBuildAction implements PlanAction {
     public steps: MultiStepProject;
     private sourceid: string;
     public name: string;
+    public value: number;
 
-    constructor(sourceid: string, creepCost: number) {
+    constructor(sourceid: string, value: number, creepCost: number) {
         this.name = "Build harvester for " + sourceid;
         const step = {
             name: "Build harvester for " + sourceid,
@@ -33,6 +34,7 @@ export class HarvesterBuildAction implements PlanAction {
             constructionSteps: [] as MultiStepProject[]
         };
         this.sourceid = sourceid;
+        this.value = value;
     }
 
     public isApplicable(state: PlanState): boolean {

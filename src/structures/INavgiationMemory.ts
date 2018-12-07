@@ -1,7 +1,7 @@
 interface FlowFieldEntry {
     cost: number;
     dist: number;
-    dir: number|undefined;
+    dir: DirectionConstant;
 }
 interface NavigationMemory {
     flowField: FlowFieldEntry[][][];

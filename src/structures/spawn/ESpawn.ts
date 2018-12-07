@@ -32,7 +32,7 @@ Object.defineProperties(StructureSpawn.prototype, {
 
 StructureSpawn.prototype.initMemory = function () {
     this.memory.navigation = {
-        flowField: this.pos.computeFlowField(),
+        flowField: this.pos.computeFlowField(true),
         freeNeighbours: this.pos.getWalkableNeighbours().length,
     };
     this.memory.spawnQueue = [];
@@ -69,9 +69,9 @@ StructureSpawn.prototype.processTask = function (buildTask: CreepBuildStep) {
         this.spawnCreep(modules, name, {
             memory: {
                 workType: Worktype.HARVEST,
-                task: (buildTask as HarvesterCreepBuildStep).source,
                 currentTarget: (buildTask as HarvesterCreepBuildStep).source,
-                movingToTask: true
+                movingToWorkplace: true,
+                workplace: (buildTask as HarvesterCreepBuildStep).source
             }
         });
     }

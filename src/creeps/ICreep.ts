@@ -1,7 +1,14 @@
 interface CreepMemory {
     workType: number,
-    task: string,
+    workplace: string;
     currentTarget: string,
-    movingToTask: boolean
+    movingToWorkplace: boolean,
 }
 
+interface Creep {
+    act(): void;
+    actHarvest(): void;
+
+    moveByFlowField(target: Source | StructureSpawn): number;
+    getDropoff(): string;
+}

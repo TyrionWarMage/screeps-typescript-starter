@@ -36,15 +36,23 @@ Room.prototype.initController = function () {
 }
 
 Room.prototype.init = function () {
-    this.memory.project = {
-        name: 'Init',
-        constructionSteps: [],
-        spawnSteps: []
+    if (this.initiated === undefined) {
+        this.memory.project = {
+            name: 'Init',
+            constructionSteps: [],
+            spawnSteps: []
+        }
+        this.initiated = 1;
+        console.log(this + ": Init phase 1")
+    } else if (this.initiated === 1) {
+        this.initSources();
+        this.initiated = 2;
+        console.log(this + ": Init phase 2")
+    } else if (this.initiated === 2) {
+        this.initController();
+        this.initiated = 3;
+        console.log(this + ": Init phase 3")
     }
-    this.initSources();
-    this.initController();
-
-    this.initiated = true;
 }
 
 Room.prototype.checkProject = function () {
@@ -63,26 +71,59 @@ Room.prototype.checkProject = function () {
 }
 
 Room.prototype.setTurnCache = function () {
+    const spawnSites = this.find(FIND_MY_SPAWNS) as StructureSpawn[];
+    const sourceSites = this.find(FIND_SOURCES);
+
+    const creepTargetsInit = new Array<number[]>();
+    for (let i: number = 0; i < 50; i++) {
+        creepTargetsInit[i] = [];
+        for (let j: number = 0; j < 50; j++) {
+            creepTargetsInit[i][j] = 0;
+        }
+    }
+
     this.turnCache = {
         creeps:
-            { my: this.find(FIND_MY_CREEPS), enemy: this.find(FIND_HOSTILE_CREEPS) },
+        {
+            my: this.find(FIND_MY_CREEPS).sort((n1, n2) => {
+                if (n1.memory.movingToWorkplace && !n2.memory.movingToWorkplace) {
+                    return 1;
+                } else if (!n1.memory.movingToWorkplace && n2.memory.movingToWorkplace) {
+                    return -1
+                } else {
+                    return 0
+                }
+            })
+            , enemy: this.find(FIND_HOSTILE_CREEPS)
+        },
         environment:
-            { sources: this.find(FIND_SOURCES) },
+            { sources: sourceSites },
         structure:
         {
             controller: this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_CONTROLLER } })[0] as StructureController,
-            spawns: this.find(FIND_MY_SPAWNS) as StructureSpawn[],
-            constructionSites: this.find(FIND_MY_CONSTRUCTION_SITES)
-        }
+            spawns: spawnSites,
+            constructionSites: this.find(FIND_MY_CONSTRUCTION_SITES),
+            energyDropoff: spawnSites,
+        },
+        creepTargets: creepTargetsInit,
     };
 }
 
 Room.prototype.act = function () {
-    if (!this.initiated) {
-        this.init()
-    } else {
-        this.setTurnCache();
-        this.checkProject();
+    if (this.controller && this.controller.my) {
+        if (this.initiated === undefined || this.initiated < 3) {
+            this.init()
+        } else {
+            this.setTurnCache();
+            this.checkProject();
+
+            for (const source of this.turnCache.environment.sources) {
+                source.memory.status.assignedHarvester = 0
+            }
+            for (const creep of this.turnCache.creeps.my) {
+                creep.act();
+            }
+        }
     }
 }
 

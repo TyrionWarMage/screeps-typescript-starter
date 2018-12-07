@@ -7,6 +7,5 @@ interface Structure {
 declare namespace NodeJS {
   interface Global {
     log: any;
-    Profiler: Profiler
   }
 }

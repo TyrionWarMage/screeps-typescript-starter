@@ -1,5 +1,5 @@
 interface Room {
-    initiated: boolean;
+    initiated: number;
     turnCache:
     {
         creeps:
@@ -16,7 +16,9 @@ interface Room {
             controller: StructureController,
             spawns: StructureSpawn[]
             constructionSites: ConstructionSite[]
+            energyDropoff: StructureSpawn[]
         }
+        creepTargets: number[][];
     }
     project: MultiStepProject;
 
@@ -31,7 +33,7 @@ interface Room {
 }
 
 interface RoomMemory {
-    initiated: boolean;
+    initiated: number;
     project: MultiStepProject;
 }
 

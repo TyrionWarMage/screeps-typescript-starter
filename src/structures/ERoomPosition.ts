@@ -111,12 +111,15 @@ RoomPosition.prototype.getPathCost = function () {
     const look = this.look();
     let cost = 1;
     look.forEach((lookObject) => {
-        if (cost !== Infinity) {
-            if (lookObject.type === LOOK_TERRAIN && lookObject.terrain === 'swamp') {
+        if (cost !== Infinity && cost !== 0.5) {
+            if (lookObject.type === LOOK_TERRAIN && lookObject.terrain === "swamp") {
                 cost = 5;
-            } else if (lookObject.type === LOOK_TERRAIN && lookObject.terrain === 'plain') {
+            } else if (lookObject.type === LOOK_TERRAIN && lookObject.terrain === "plain") {
                 cost = 1;
-            } else if (lookObject.type === LOOK_STRUCTURES && lookObject.structure !== undefined) {
+            } else if (lookObject.type === LOOK_TERRAIN && lookObject.terrain === "wall") {
+                cost = Infinity;
+            }
+            if (lookObject.type === LOOK_STRUCTURES && lookObject.structure !== undefined) {
                 if (lookObject.structure.structureType === STRUCTURE_ROAD
                     || lookObject.structure.structureType === STRUCTURE_CONTAINER
                     || (lookObject.structure.structureType === STRUCTURE_RAMPART
@@ -124,16 +127,16 @@ RoomPosition.prototype.getPathCost = function () {
                     )
                 ) {
                     cost = 0.5;
+                } else {
+                    cost = Infinity;
                 }
-            } else {
-                cost = Infinity;
             }
         }
     });
     return cost;
 }
 
-RoomPosition.prototype.computeFlowField = function (maxCost = 100) {
+RoomPosition.prototype.computeFlowField = function (neighbourIsZero = false, maxCost = 100) {
     const queue = new Array(maxCost);
     for (let i = 0; i < maxCost; i++) {
         queue[i] = new Array<RoomPosition>();
@@ -149,7 +152,7 @@ RoomPosition.prototype.computeFlowField = function (maxCost = 100) {
 
     let currentCost = 0;
     let currentPos = this;
-    flowField[currentPos.x][currentPos.y].push({ dir: undefined, dist: 0, cost: 0 });
+    flowField[currentPos.x][currentPos.y].push({ dir: TOP, dist: 0, cost: 0 });
     queue[0].push(currentPos);
 
     while (currentCost < maxCost) {
@@ -189,6 +192,9 @@ RoomPosition.prototype.computeFlowField = function (maxCost = 100) {
         for (let j = 0; j < 50; j++) {
             for (const entry of flowField[i][j]) {
                 entry.cost /= 2
+                if (neighbourIsZero) {
+                    entry.dist = Math.max(0, entry.dist - 1);
+                }
             }
         }
     }

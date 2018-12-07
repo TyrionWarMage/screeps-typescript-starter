@@ -10,6 +10,7 @@ interface PlanAction {
     update(state: PlanStateInterface): PlanStateInterface;
     steps: MultiStepProject;
     name: string;
+    value: number;
 }
 
 interface Project {

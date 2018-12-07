@@ -1,10 +1,9 @@
-import * as Profiler from "Profiler";
-global.Profiler = Profiler.init();
-
 import "structures/ERoomPosition"
 import "structures/EStructure";
 import "structures/room/ERoom";
+import "creeps/ECreep"
 import "utils/EArray"
+import "utils/ERoomVisual"
 import { ErrorMapper } from "utils/ErrorMapper";
 
 
