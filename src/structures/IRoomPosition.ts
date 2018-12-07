@@ -1,5 +1,5 @@
 interface RoomPosition {
-    computeFlowField(neighbourIsZero?: boolean, maxCost?: number): FlowFieldEntry[][][];
+    computeFlowField(maxCost?: number): FlowFieldEntry[][][];
     isWalkable(): boolean;
     isFreeToWalk(): boolean;
     getNeighbour(dir: number): RoomPosition | undefined;

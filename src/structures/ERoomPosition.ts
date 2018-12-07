@@ -136,7 +136,7 @@ RoomPosition.prototype.getPathCost = function () {
     return cost;
 }
 
-RoomPosition.prototype.computeFlowField = function (neighbourIsZero = false, maxCost = 100) {
+RoomPosition.prototype.computeFlowField = function (maxCost = 100) {
     const queue = new Array(maxCost);
     for (let i = 0; i < maxCost; i++) {
         queue[i] = new Array<RoomPosition>();
@@ -192,9 +192,6 @@ RoomPosition.prototype.computeFlowField = function (neighbourIsZero = false, max
         for (let j = 0; j < 50; j++) {
             for (const entry of flowField[i][j]) {
                 entry.cost /= 2
-                if (neighbourIsZero) {
-                    entry.dist = Math.max(0, entry.dist - 1);
-                }
             }
         }
     }

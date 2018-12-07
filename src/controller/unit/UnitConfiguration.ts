@@ -140,7 +140,7 @@ export class UnitConfigurationController {
             lastapproxWork = approxWork;
             for (let optionIdx = 0; optionIdx < workoptions.length; optionIdx++) {
                 tmpWork = work.concat(workoptions[optionIdx]);
-                approxWork = this.approximateWork(tmpWork, workPerTick, travelDist, travelCost)[0];
+                approxWork = this.approximateWork(tmpWork, workPerTick, travelDist - 1, travelCost - 1)[0];
                 if (approxWork > maxWork) {
                     best = optionIdx;
                     maxWork = approxWork;
@@ -155,17 +155,17 @@ export class UnitConfigurationController {
         }
 
         const approxNextCost = determineBodyCost(work);
-        const approxNextWorkEntry = this.approximateWork(work, workPerTick, travelDist, travelCost);
+        const approxNextWorkEntry = this.approximateWork(work, workPerTick, travelDist - 1, travelCost - 1);
         const approxNextWorkModules = JSON.parse(JSON.stringify(work))
         approxNextWorkModules.sort();
 
         work.splice(-1 * lastAdd, lastAdd);
         const approxCost = determineBodyCost(work);
-        const approxWorkEntry = this.approximateWork(work, workPerTick, travelDist, travelCost);
+        const approxWorkEntry = this.approximateWork(work, workPerTick, travelDist - 1, travelCost - 1);
         work.sort();
 
-        const approxShortTravelWorkEntry = this.approximateWork(work, workPerTick, 5, travelCost / travelDist * 5);
-        const approxRoadTravelEntry = this.approximateWork(work, workPerTick, travelDist, travelDist * 0.5);
+        const approxShortTravelWorkEntry = this.approximateWork(work, workPerTick, 5, travelCost / travelDist * 5 - 1);
+        const approxRoadTravelEntry = this.approximateWork(work, workPerTick, travelDist - 1, travelDist * 0.5 - 0.5);
 
         return {
             version: 0,

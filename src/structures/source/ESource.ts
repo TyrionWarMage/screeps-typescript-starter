@@ -23,7 +23,7 @@ Source.prototype.init = function () {
     this.memory = {
         navigation:
         {
-            flowField: this.pos.computeFlowField(true),
+            flowField: this.pos.computeFlowField(),
             freeNeighbours: this.pos.getWalkableNeighbours().length
         },
         initiated: true,

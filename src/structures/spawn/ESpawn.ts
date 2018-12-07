@@ -32,7 +32,7 @@ Object.defineProperties(StructureSpawn.prototype, {
 
 StructureSpawn.prototype.initMemory = function () {
     this.memory.navigation = {
-        flowField: this.pos.computeFlowField(true),
+        flowField: this.pos.computeFlowField(),
         freeNeighbours: this.pos.getWalkableNeighbours().length,
     };
     this.memory.spawnQueue = [];
