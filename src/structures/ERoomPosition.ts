@@ -1,3 +1,13 @@
+import { Constants } from "utils/Constants";
+
+function addSortedToFlowFieldQueue(list: FlowFieldQueueEntry[], item: FlowFieldQueueEntry) {
+    let insertIdx = 0;
+    while (list.length > insertIdx && list[insertIdx].cost + Constants.AStarWeight * list[insertIdx].heuristic < item.cost + Constants.AStarWeight * item.heuristic) {
+        insertIdx++;
+    }
+    list.splice(insertIdx, 0, item)
+}
+
 RoomPosition.prototype.getNeighbour = function (dir: number) {
     let newPos;
     switch (dir) {
@@ -136,56 +146,59 @@ RoomPosition.prototype.getPathCost = function () {
     return cost;
 }
 
-RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, target, maxCostToTarget = 1) {
+RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, target, maxCostToTarget = 3) {
     let maxCost = Infinity;
     let currentCost = 0;
     let currentPos = this;
     if (flowFieldQueue.length === 0) {
         flowField[currentPos.x][currentPos.y].push({ dir: TOP, dist: 0, cost: 0 });
-        flowFieldQueue.push(Array<RoomPosition>());
-        flowFieldQueue[0].push(currentPos);
+        flowFieldQueue.push({ pos: currentPos, cost: 0, heuristic: this.getRangeTo(target) });
     } else {
         for (const flowFieldQueueEntry of flowFieldQueue) {
-            for (let i = 0; i < flowFieldQueueEntry.length; i++) {
-                flowFieldQueueEntry[i] = new RoomPosition(flowFieldQueueEntry[i].x, flowFieldQueueEntry[i].y, flowFieldQueueEntry[i].roomName)
-            }
+            flowFieldQueueEntry.pos = new RoomPosition(flowFieldQueueEntry.pos.x, flowFieldQueueEntry.pos.y, flowFieldQueueEntry.pos.roomName)
+            flowFieldQueueEntry.heuristic = this.getRangeTo(target);
         }
+        flowFieldQueue.sort((n1, n2) => {
+            if (n1.cost + Constants.AStarWeight * n1.heuristic > n2.cost + Constants.AStarWeight * n2.heuristic) {
+                return 1
+            } else if (n1.cost + Constants.AStarWeight * n1.heuristic < n2.cost + Constants.AStarWeight * n2.heuristic) {
+                return -1
+            } else {
+                return 0
+            }
+        });
     }
 
     let callCounter = 0;
-
-    while (currentCost < maxCost) {
-        if (flowFieldQueue[currentCost * 2].length === 0) {
-            currentCost += 0.5;
-        } else {
-            callCounter++;
-            currentPos = flowFieldQueue[currentCost * 2].shift() as RoomPosition;
-            if (flowField[currentPos.x][currentPos.y][0].cost === currentCost) {
-                const neighours = currentPos.getNeighbours();
-                for (const neighour of neighours) {
-                    const pathCost = neighour.getPathCost();
-                    if (neighour.x === target.x && neighour.y === target.y && neighour.roomName === target.roomName) {
-                        maxCost = currentCost + maxCostToTarget;
+    let currentHeuristic = 0;
+    while (currentCost + Constants.AStarWeight * currentHeuristic < maxCost) {
+        callCounter++;
+        const queueEntry = flowFieldQueue.shift() as FlowFieldQueueEntry
+        currentPos = queueEntry.pos;
+        currentCost = queueEntry.cost;
+        currentHeuristic = queueEntry.heuristic
+        if (flowField[currentPos.x][currentPos.y][0].cost === currentCost) {
+            const neighbours = currentPos.getNeighbours();
+            for (const neighbour of neighbours) {
+                const pathCost = neighbour.getPathCost();
+                if (neighbour.x === target.x && neighbour.y === target.y && neighbour.roomName === target.roomName) {
+                    maxCost = currentCost + maxCostToTarget;
+                }
+                if (pathCost === Infinity) {
+                    flowField[neighbour.x][neighbour.y].push({ dir: neighbour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist, cost: currentCost });
+                } else {
+                    let sortIndex = 0;
+                    while (sortIndex < flowField[neighbour.x][neighbour.y].length && flowField[neighbour.x][neighbour.y][0].cost < currentCost + pathCost) {
+                        sortIndex++
                     }
-                    if (pathCost === Infinity) {
-                        flowField[neighour.x][neighour.y].push({ dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist, cost: currentCost });
+                    if (flowField[neighbour.x][neighbour.y].length === 0 || currentCost + pathCost < flowField[neighbour.x][neighbour.y][0].cost) {
+                        Game.rooms[this.roomName].visual.writeText("" + (currentCost + pathCost), neighbour.x, neighbour.y)
+                        addSortedToFlowFieldQueue(flowFieldQueue, { pos: neighbour, cost: currentCost + pathCost, heuristic: neighbour.getRangeTo(target) })
+                    }
+                    if (flowField[neighbour.x][neighbour.y].length === sortIndex) {
+                        flowField[neighbour.x][neighbour.y].push({ dir: neighbour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
                     } else {
-                        let sortIndex = 0;
-                        while (sortIndex < flowField[neighour.x][neighour.y].length && flowField[neighour.x][neighour.y][0].cost < currentCost + pathCost) {
-                            sortIndex++
-                        }
-                        if (flowField[neighour.x][neighour.y].length === 0 || currentCost + pathCost < flowField[neighour.x][neighour.y][0].cost) {
-                            for (let i = flowFieldQueue.length; i < (currentCost + pathCost) * 2 + 1; i++) {
-                                flowFieldQueue.push(Array<RoomPosition>());
-                            }
-                            Game.rooms[this.roomName].visual.writeText("" + (currentCost + pathCost), neighour.x, neighour.y)
-                            flowFieldQueue[(currentCost + pathCost) * 2].push(neighour);
-                        }
-                        if (flowField[neighour.x][neighour.y].length === sortIndex) {
-                            flowField[neighour.x][neighour.y].push({ dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
-                        } else {
-                            flowField[neighour.x][neighour.y].splice(sortIndex, 0, { dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
-                        }
+                        flowField[neighbour.x][neighbour.y].splice(sortIndex, 0, { dir: neighbour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
                     }
                 }
             }

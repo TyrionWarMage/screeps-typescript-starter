@@ -3,8 +3,14 @@ interface FlowFieldEntry {
     dist: number;
     dir: DirectionConstant;
 }
+
+interface FlowFieldQueueEntry {
+    pos: RoomPosition;
+    cost: number;
+    heuristic: number;
+}
 interface NavigationMemory {
     flowField: FlowFieldEntry[][][];
-    flowFieldQueue: RoomPosition[][];
+    flowFieldQueue: FlowFieldQueueEntry[];
     freeNeighbours: number;
 }

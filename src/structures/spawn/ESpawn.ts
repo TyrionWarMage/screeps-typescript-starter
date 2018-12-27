@@ -64,10 +64,18 @@ StructureSpawn.prototype.initMemory = function () {
 
     if (Game.cpu.bucket > 200 || Game.cpu.bucket === undefined) {
         const sources = this.room.find(FIND_SOURCES);
-        this.pos.getFlowFieldList(this.memory.navigation.flowFieldQueue, this.memory.navigation.flowField, sources[this.initiated].pos);
-        this.initiated += 1;
-        if (this.initiated === sources.length) {
-            this.initiated = 100;
+        let allInitated = true;
+        sources.forEach((x) => {
+            if (x.memory === undefined) {
+                allInitated = false
+            }
+        });
+        if (allInitated) {
+            this.pos.getFlowFieldList(this.memory.navigation.flowFieldQueue, this.memory.navigation.flowField, sources[this.initiated].pos);
+            this.initiated += 1;
+            if (this.initiated === sources.length) {
+                this.initiated = 100;
+            }
         }
     }
 }
