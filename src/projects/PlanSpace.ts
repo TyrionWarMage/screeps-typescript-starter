@@ -1,6 +1,6 @@
 import { Worktype } from "../utils/Constants";
 
-export class PlanState implements PlanStateInterface {
+export class PlanState {
     public sources: { [id: string]: SourceMemory };
     public throughput: number;
     public elapsedTime: number;
@@ -12,15 +12,22 @@ export class PlanState implements PlanStateInterface {
         this.elapsedTime = elapsedTime;
         this.unitConfigurations = unitConfigurations;
     }
+
+    getValue(): number {
+        return this.throughput
+    }
+
+    copy(): PlanState {
+        return new PlanState(JSON.parse(JSON.stringify(this.sources)), JSON.parse(JSON.stringify(this.unitConfigurations)), this.throughput, this.elapsedTime)
+    }
 }
 
 export class HarvesterBuildAction implements PlanAction {
     public steps: MultiStepProject;
     private sourceid: string;
     public name: string;
-    public value: number;
 
-    constructor(sourceid: string, value: number, creepCost: number) {
+    constructor(sourceid: string, creepCost: number) {
         this.name = "Build harvester for " + sourceid;
         const step = {
             name: "Build harvester for " + sourceid,
@@ -34,7 +41,6 @@ export class HarvesterBuildAction implements PlanAction {
             constructionSteps: [] as MultiStepProject[]
         };
         this.sourceid = sourceid;
-        this.value = value;
     }
 
     public isApplicable(state: PlanState): boolean {
@@ -42,17 +48,13 @@ export class HarvesterBuildAction implements PlanAction {
     }
 
     public update(state: PlanState) {
-        const newState = JSON.parse(JSON.stringify(state)) as PlanState;
-
         const unitConfig = state.unitConfigurations.perSource[this.sourceid].current;
         const duration = unitConfig.cost / state.throughput;
 
-        newState.elapsedTime = + duration;
-        newState.sources[this.sourceid].status.assignedHarvester = + 1;
-        newState.throughput += unitConfig.throughput;
+        state.elapsedTime += duration;
+        state.sources[this.sourceid].status.assignedHarvester += 1;
+        state.throughput += unitConfig.throughput;
 
-        return newState
+        return state
     }
-
-
 }

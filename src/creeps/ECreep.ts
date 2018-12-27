@@ -27,6 +27,9 @@ Creep.prototype.actHarvest = function () {
             this.harvest(target as Source);
         } else {
             this.transfer(target as StructureSpawn, RESOURCE_ENERGY);
+            if (this.ticksToLive as number + Math.floor(600 / this.body.length) < 1500 && !(target as StructureSpawn).spawning) {
+                (target as StructureSpawn).renewCreep(this);
+            }
         }
     }
 
@@ -51,15 +54,7 @@ Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
                 }
             } else {
                 if (sameCostField.length > 0) {
-                    const idx = Math.floor(Math.random() * sameCostField.length);
-                    next = this.pos.getNeighbour(sameCostField[idx].dir) as RoomPosition;
-                    this.move(sameCostField[idx].dir);
-                    this.room.turnCache.creepTargets[next.x][next.y]++;
-                    if (target.memory.navigation.flowField[next.x][next.y][0].dist === 1) {
-                        return 1
-                    } else {
-                        return -1
-                    }
+                    break;
                 } else {
                     sameCostField = [] as FlowFieldEntry[];
                     if (next !== undefined && next.isFreeToWalk() && this.room.turnCache.creepTargets[next.x][next.y] === 0) {
@@ -69,6 +64,20 @@ Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
             }
             lastEntryCost = queueEntry.cost;
         }
+        if (sameCostField.length !== 0) {
+            const idx = Math.floor(Math.random() * sameCostField.length);
+            const next = this.pos.getNeighbour(sameCostField[idx].dir) as RoomPosition;
+            this.move(sameCostField[idx].dir);
+            this.room.turnCache.creepTargets[next.x][next.y]++;
+            if (target.memory.navigation.flowField[next.x][next.y][0].dist === 1) {
+                return 1
+            } else {
+                return -1
+            }
+        } else {
+            return -1
+        }
+
     }
     return 0
 }

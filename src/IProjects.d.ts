@@ -2,7 +2,11 @@ interface PlanStateInterface {
     sources: { [id: string]: SourceMemory };
     throughput: number;
     elapsedTime: number;
-    unitConfigurations: AllUnitConfigurations
+    unitConfigurations: AllUnitConfigurations;
+
+    getValue(): number;
+
+    copy(): PlanStateInterface;
 }
 
 interface PlanAction {
@@ -10,7 +14,6 @@ interface PlanAction {
     update(state: PlanStateInterface): PlanStateInterface;
     steps: MultiStepProject;
     name: string;
-    value: number;
 }
 
 interface Project {

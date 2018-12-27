@@ -1,3 +1,5 @@
+import { Constants } from "utils/Constants";
+
 Object.defineProperties(Source.prototype, {
     memory: {
         configurable: true,
@@ -48,7 +50,8 @@ Source.prototype.init = function () {
 }
 
 Source.prototype.computeMaxHarvesters = function (config: UnitConfig) {
-    const maxByThroughput = Math.ceil(this.energyCapacity / config.throughput);
-    const maxBySlots = this.memory.navigation.freeNeighbours * Math.ceil((config.travelTime + config.workTime) / config.workTime);
-    this.memory.status.maxHarvester = Math.min(maxBySlots, maxByThroughput);
+    const maxByThroughput = this.energyCapacity / config.throughput;
+    const maxBySlots = this.memory.navigation.freeNeighbours * ((config.travelTime + config.workTime) / config.workTime);
+    this.memory.status.maxHarvester = Math.floor(Math.min(maxBySlots, maxByThroughput));
+    // this.memory.status.maxHarvester = Math.floor((Math.min(maxBySlots, maxByThroughput) - this.memory.navigation.freeNeighbours) * Constants.CROWDING_FACTOR + this.memory.navigation.freeNeighbours);
 }
