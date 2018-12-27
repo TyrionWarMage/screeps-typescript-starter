@@ -20,10 +20,21 @@ Object.defineProperties(Source.prototype, {
 });
 
 Source.prototype.init = function () {
+    const flowFieldQueue = new Array();
+
+    const flowField = new Array<FlowFieldEntry[][]>(50);
+    for (let i = 0; i < 50; i++) {
+        flowField[i] = new Array<FlowFieldEntry[]>(50);
+        for (let j = 0; j < 50; j++) {
+            flowField[i][j] = new Array<FlowFieldEntry>();
+        }
+    }
+
     this.memory = {
         navigation:
         {
-            flowField: this.pos.computeFlowField(),
+            flowField: flowField,
+            flowFieldQueue: flowFieldQueue,
             freeNeighbours: this.pos.getWalkableNeighbours().length
         },
         initiated: true,

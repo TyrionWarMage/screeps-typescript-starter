@@ -5,5 +5,6 @@ interface FlowFieldEntry {
 }
 interface NavigationMemory {
     flowField: FlowFieldEntry[][][];
+    flowFieldQueue: RoomPosition[][];
     freeNeighbours: number;
 }

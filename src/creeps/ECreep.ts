@@ -30,7 +30,7 @@ Creep.prototype.actHarvest = function () {
         }
     }
 
-    this.room.visual.fluid(RESOURCE_ENERGY, this.pos.x, this.pos.y, (carrySum / this.carryCapacity) / 2 + 0.5)
+    // this.room.visual.fluid(RESOURCE_ENERGY, this.pos.x, this.pos.y, (carrySum / this.carryCapacity) / 2 + 0.5)
 }
 
 Creep.prototype.getDropoff = function () {
@@ -39,11 +39,11 @@ Creep.prototype.getDropoff = function () {
 }
 
 Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
-    const flowQuue = target.memory.navigation.flowField[this.pos.x][this.pos.y];
-    if (flowQuue[0].dist !== 1) {
+    const flowQueue = target.pos.getFlowFieldList(target.memory.navigation.flowFieldQueue, target.memory.navigation.flowField, this.pos);
+    if (flowQueue[0].dist !== 1) {
         let lastEntryCost = 0;
         let sameCostField = [] as FlowFieldEntry[];
-        for (const queueEntry of flowQuue) {
+        for (const queueEntry of flowQueue) {
             let next = this.pos.getNeighbour(queueEntry.dir);
             if (queueEntry.cost === lastEntryCost) {
                 if (next !== undefined && next.isFreeToWalk() && this.room.turnCache.creepTargets[next.x][next.y] === 0) {

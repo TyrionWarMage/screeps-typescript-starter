@@ -136,50 +136,48 @@ RoomPosition.prototype.getPathCost = function () {
     return cost;
 }
 
-RoomPosition.prototype.computeFlowField = function (maxCost = 100) {
-    const queue = new Array(maxCost);
-    for (let i = 0; i < maxCost; i++) {
-        queue[i] = new Array<RoomPosition>();
-    }
-
-    const flowField = new Array<FlowFieldEntry[][]>(50);
-    for (let i = 0; i < 50; i++) {
-        flowField[i] = new Array<FlowFieldEntry[]>(50);
-        for (let j = 0; j < 50; j++) {
-            flowField[i][j] = new Array<FlowFieldEntry>();
-        }
-    }
-
+RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, target, maxCostToTarget = 1) {
+    let maxCost = Infinity;
     let currentCost = 0;
     let currentPos = this;
-    flowField[currentPos.x][currentPos.y].push({ dir: TOP, dist: 0, cost: 0 });
-    queue[0].push(currentPos);
+    if (flowFieldQueue.length === 0) {
+        flowField[currentPos.x][currentPos.y].push({ dir: TOP, dist: 0, cost: 0 });
+        flowFieldQueue.push(Array<RoomPosition>());
+        flowFieldQueue[0].push(currentPos);
+    }
+
+    let callCounter = 0;
 
     while (currentCost < maxCost) {
-        if (queue[currentCost].length === 0) {
-            currentCost++;
+        if (flowFieldQueue[currentCost * 2].length === 0) {
+            currentCost += 0.5;
         } else {
-            currentPos = queue[currentCost].shift();
+            callCounter++;
+            currentPos = flowFieldQueue[currentCost * 2].shift() as RoomPosition;
             if (flowField[currentPos.x][currentPos.y][0].cost === currentCost) {
                 const neighours = currentPos.getNeighbours();
                 for (const neighour of neighours) {
-                    const pathCost = neighour.getPathCost() * 2; // For .5 cost
+                    const pathCost = neighour.getPathCost();
+                    if (neighour.x === target.x && neighour.y === target.y && neighour.roomName === target.roomName) {
+                        maxCost = currentCost + maxCostToTarget;
+                    }
                     if (pathCost === Infinity) {
                         flowField[neighour.x][neighour.y].push({ dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist, cost: currentCost });
                     } else {
-                        if (currentCost + pathCost < maxCost) {
-                            let sortIndex = 0;
-                            while (sortIndex < flowField[neighour.x][neighour.y].length && flowField[neighour.x][neighour.y][0].cost < currentCost + pathCost) {
-                                sortIndex++
+                        let sortIndex = 0;
+                        while (sortIndex < flowField[neighour.x][neighour.y].length && flowField[neighour.x][neighour.y][0].cost < currentCost + pathCost) {
+                            sortIndex++
+                        }
+                        if (flowField[neighour.x][neighour.y].length === 0 || currentCost + pathCost < flowField[neighour.x][neighour.y][0].cost) {
+                            for (let i = flowFieldQueue.length; i < (currentCost + pathCost) * 2 + 1; i++) {
+                                flowFieldQueue.push(Array<RoomPosition>());
                             }
-                            if (flowField[neighour.x][neighour.y].length === 0 || currentCost + pathCost < flowField[neighour.x][neighour.y][0].cost) {
-                                queue[currentCost + pathCost].push(neighour);
-                            }
-                            if (flowField[neighour.x][neighour.y].length === sortIndex) {
-                                flowField[neighour.x][neighour.y].push({ dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
-                            } else {
-                                flowField[neighour.x][neighour.y].splice(sortIndex, 0, { dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
-                            }
+                            flowFieldQueue[(currentCost + pathCost) * 2].push(neighour);
+                        }
+                        if (flowField[neighour.x][neighour.y].length === sortIndex) {
+                            flowField[neighour.x][neighour.y].push({ dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
+                        } else {
+                            flowField[neighour.x][neighour.y].splice(sortIndex, 0, { dir: neighour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist + 1, cost: currentCost + pathCost })
                         }
                     }
                 }
@@ -187,14 +185,12 @@ RoomPosition.prototype.computeFlowField = function (maxCost = 100) {
         }
     }
 
-    // correction for integer cost
-    for (let i = 0; i < 50; i++) {
-        for (let j = 0; j < 50; j++) {
-            for (const entry of flowField[i][j]) {
-                entry.cost /= 2
-            }
-        }
-    }
+    console.log("Updated flowField for " + this + " with target " + target + " performing " + callCounter + " iterations")
+}
 
-    return flowField;
+RoomPosition.prototype.getFlowFieldList = function (flowFieldQueue, flowField, target) {
+    if (flowField[target.x][target.y].length === 0) {
+        this.computeFlowField(flowFieldQueue, flowField, target);
+    }
+    return flowField[target.x][target.y];
 }

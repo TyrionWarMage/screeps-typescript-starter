@@ -31,11 +31,27 @@ Object.defineProperties(StructureSpawn.prototype, {
 });
 
 StructureSpawn.prototype.initMemory = function () {
+    const flowFieldQueue = new Array();
+
+    const flowField = new Array<FlowFieldEntry[][]>(50);
+    for (let i = 0; i < 50; i++) {
+        flowField[i] = new Array<FlowFieldEntry[]>(50);
+        for (let j = 0; j < 50; j++) {
+            flowField[i][j] = new Array<FlowFieldEntry>();
+        }
+    }
+
     this.memory.navigation = {
-        flowField: this.pos.computeFlowField(),
+        flowField: flowField,
+        flowFieldQueue: flowFieldQueue,
         freeNeighbours: this.pos.getWalkableNeighbours().length,
     };
     this.memory.spawnQueue = [];
+
+    for (const source of this.room.find(FIND_SOURCES) as Source[]) {
+        this.pos.getFlowFieldList(this.memory.navigation.flowFieldQueue, this.memory.navigation.flowField, source.pos);
+    }
+
     this.initiated = true;
 }
 
