@@ -39,8 +39,9 @@ Creep.prototype.actHarvest = function () {
         if (this.memory.movingToWorkplace) {
             this.harvest(target as Source);
         } else {
-            this.transfer(target as StructureSpawn, RESOURCE_ENERGY);
-            (Game.getObjectById(this.memory.workplace) as Source).updateStatistics(Math.min((target as StructureSpawn).energyCapacity - (target as StructureSpawn).energy, this.carry[RESOURCE_ENERGY]));
+            if (this.transfer(target as StructureSpawn, RESOURCE_ENERGY) === 0) {
+                (Game.getObjectById(this.memory.workplace) as Source).updateStatistics(Math.min((target as StructureSpawn).energyCapacity - (target as StructureSpawn).energy, this.carry[RESOURCE_ENERGY]));
+            }
             if (this.ticksToLive as number + Math.floor(600 / this.body.length) < 1500 && !(target as StructureSpawn).spawning) {
                 (target as StructureSpawn).renewCreep(this);
             }
@@ -49,16 +50,10 @@ Creep.prototype.actHarvest = function () {
         const carrySum = _.sum(this.carry)
         if (this.memory.movingToWorkplace && this.carryCapacity === carrySum) {
             this.memory.movingToWorkplace = false
-
             this.memory.currentTarget = this.getDropoff();
-            target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn;
-            this.moveByFlowField(target)
         } else if (!this.memory.movingToWorkplace && 0 === _.sum(this.carry)) {
             this.memory.movingToWorkplace = true;
             this.memory.currentTarget = this.memory.workplace;
-
-            target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn;
-            this.moveByFlowField(target)
         }
     }
 

@@ -22,12 +22,15 @@ Object.defineProperties(Room.prototype, {
 });
 
 Room.prototype.initSources = function () {
-    if (Memory.sources === undefined) {
-        Memory.sources = {}
+    const sources = this.find(FIND_SOURCES)
+    if (Game.cpu.bucket > 200 || Game.cpu.bucket === undefined) {
+        sources[this.memory.initiated].init();
+        this.memory.initiated++;
+        if (this.memory.initiated === sources.length) {
+            return true;
+        }
     }
-    for (const source of this.find(FIND_SOURCES)) {
-        source.init()
-    }
+    return false;
 }
 
 Room.prototype.initController = function () {
@@ -42,16 +45,13 @@ Room.prototype.init = function () {
             constructionSteps: [],
             spawnSteps: []
         }
-        this.initiated = 1;
-        console.log(this + ": Init phase 1")
-    } else if (this.initiated === 1) {
-        this.initSources();
-        this.initiated = 2;
-        console.log(this + ": Init phase 2")
-    } else if (this.initiated === 2) {
-        this.initController();
-        this.initiated = 3;
-        console.log(this + ": Init phase 3")
+        Memory.sources = {}
+        this.initiated = 0;
+    } else if (this.initiated !== undefined) {
+        if (this.initSources()) {
+            this.initController();
+            this.initiated = 100;
+        }
     }
 }
 
@@ -111,7 +111,7 @@ Room.prototype.setTurnCache = function () {
 
 Room.prototype.act = function () {
     if (this.controller && this.controller.my) {
-        if (this.initiated === undefined || this.initiated < 3) {
+        if (this.initiated === undefined || this.initiated < 100) {
             this.init()
         } else {
             this.setTurnCache();

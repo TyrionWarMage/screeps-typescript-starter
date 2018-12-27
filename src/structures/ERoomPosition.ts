@@ -144,6 +144,12 @@ RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, t
         flowField[currentPos.x][currentPos.y].push({ dir: TOP, dist: 0, cost: 0 });
         flowFieldQueue.push(Array<RoomPosition>());
         flowFieldQueue[0].push(currentPos);
+    } else {
+        for (const flowFieldQueueEntry of flowFieldQueue) {
+            for (let i = 0; i < flowFieldQueueEntry.length; i++) {
+                flowFieldQueueEntry[i] = new RoomPosition(flowFieldQueueEntry[i].x, flowFieldQueueEntry[i].y, flowFieldQueueEntry[i].roomName)
+            }
+        }
     }
 
     let callCounter = 0;
@@ -172,6 +178,7 @@ RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, t
                             for (let i = flowFieldQueue.length; i < (currentCost + pathCost) * 2 + 1; i++) {
                                 flowFieldQueue.push(Array<RoomPosition>());
                             }
+                            Game.rooms[this.roomName].visual.writeText("" + (currentCost + pathCost), neighour.x, neighour.y)
                             flowFieldQueue[(currentCost + pathCost) * 2].push(neighour);
                         }
                         if (flowField[neighour.x][neighour.y].length === sortIndex) {

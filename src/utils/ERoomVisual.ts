@@ -65,6 +65,14 @@ interface RoomVisual {
     fluid(type: ResourceConstant, x: number, y: number, opacity?: number, size?: number, color?: string[]): void;
     mineral(type: ResourceConstant, x: number, y: number, opacity?: number, size?: number, color?: string[]): void;
     compound(type: ResourceConstant, x: number, y: number, size?: number, color?: string[]): void;
+    writeText(text: string, x: number, y: number): void;
+}
+RoomVisual.prototype.writeText = function (text, x, y) {
+    this.text(text, x, y, {
+        font: 0.3,
+        color: Color.white[0],
+        backgroundPadding: 0,
+    })
 }
 
 RoomVisual.prototype.fluid = function (type, x, y, opactity = 1, size = 0.25, color = MineralColor[type]) {

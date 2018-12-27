@@ -51,6 +51,8 @@ Source.prototype.init = function () {
             amounts: [],
         }
     }
+
+    this.pos.computeFlowField(this.memory.navigation.flowFieldQueue, this.memory.navigation.flowField, (this.room.find(FIND_MY_SPAWNS)[0] as StructureSpawn).pos)
 }
 
 Source.prototype.computeMaxHarvesters = function (config: UnitConfig) {
