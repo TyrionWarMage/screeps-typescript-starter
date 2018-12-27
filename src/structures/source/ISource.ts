@@ -7,6 +7,10 @@ interface SourceMemory {
         assignedHarvester: number;
         maxHarvester: number;
     }
+    statistics: {
+        times: number[];
+        amounts: number[];
+    }
 }
 
 interface Source {
@@ -14,5 +18,6 @@ interface Source {
     memory: SourceMemory;
     init(): void;
     computeMaxHarvesters(config: UnitConfig): void;
+    updateStatistics(amount: number): void;
 }
 

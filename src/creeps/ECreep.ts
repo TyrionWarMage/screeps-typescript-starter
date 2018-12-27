@@ -1,35 +1,64 @@
 import { Worktype } from "../utils/Constants"
 
 Creep.prototype.act = function () {
-    switch (this.memory.workType) {
-        case (Worktype.HARVEST):
-            this.actHarvest();
-            break;
+    if (!this.checkRenew()) {
+        switch (this.memory.workType) {
+            case (Worktype.HARVEST):
+                this.actHarvest();
+                break;
+        }
+    }
+}
+
+Creep.prototype.checkRenew = function () {
+    const spawn = this.room.turnCache.structure.spawns[0];
+    if (this.ticksToLive as number < 200 && !spawn.renewQueue.includes(this.id)) {
+        spawn.renewQueue.push(this.id);
+    }
+    if (spawn.renewQueue.length > 0 && spawn.renewQueue[0] === this.id) {
+        if (this.moveByFlowField(this.room.turnCache.structure.spawns[0]) !== -1) {
+            this.room.turnCache.structure.spawns[0].renewCreep(this);
+        }
+        if (this.ticksToLive as number + Math.floor(600 / this.body.length) > 1500) {
+            spawn.renewQueue.shift();
+            return false;
+        }
+        return true;
+    } else {
+        return false;
     }
 }
 
 Creep.prototype.actHarvest = function () {
     const mySource = Game.getObjectById(this.memory.workplace) as Source
     mySource.memory.status.assignedHarvester++
-    const carrySum = _.sum(this.carry)
-    if (this.memory.movingToWorkplace && this.carryCapacity === carrySum) {
-        this.memory.movingToWorkplace = false
-        this.memory.currentTarget = this.getDropoff();
-    } else if (!this.memory.movingToWorkplace && 0 === _.sum(this.carry)) {
-        this.memory.movingToWorkplace = true;
-        this.memory.currentTarget = this.memory.workplace;
-    }
 
-    const target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn;
+    let target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn;
 
     if (this.moveByFlowField(target) !== -1) {
         if (this.memory.movingToWorkplace) {
             this.harvest(target as Source);
         } else {
             this.transfer(target as StructureSpawn, RESOURCE_ENERGY);
+            (Game.getObjectById(this.memory.workplace) as Source).updateStatistics(Math.min((target as StructureSpawn).energyCapacity - (target as StructureSpawn).energy, this.carry[RESOURCE_ENERGY]));
             if (this.ticksToLive as number + Math.floor(600 / this.body.length) < 1500 && !(target as StructureSpawn).spawning) {
                 (target as StructureSpawn).renewCreep(this);
             }
+        }
+
+        const carrySum = _.sum(this.carry)
+        if (this.memory.movingToWorkplace && this.carryCapacity === carrySum) {
+            this.memory.movingToWorkplace = false
+
+            this.memory.currentTarget = this.getDropoff();
+            target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn;
+            this.moveByFlowField(target)
+        } else if (!this.memory.movingToWorkplace && 0 === _.sum(this.carry)) {
+            this.memory.movingToWorkplace = true;
+            this.memory.currentTarget = this.memory.workplace;
+
+            target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn;
+            this.moveByFlowField(target)
         }
     }
 
@@ -67,13 +96,11 @@ Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
         if (sameCostField.length !== 0) {
             const idx = Math.floor(Math.random() * sameCostField.length);
             const next = this.pos.getNeighbour(sameCostField[idx].dir) as RoomPosition;
-            this.move(sameCostField[idx].dir);
-            this.room.turnCache.creepTargets[next.x][next.y]++;
-            if (target.memory.navigation.flowField[next.x][next.y][0].dist === 1) {
-                return 1
-            } else {
-                return -1
+            const moveStatus = this.move(sameCostField[idx].dir);
+            if (moveStatus === 0) {
+                this.room.turnCache.creepTargets[next.x][next.y]++;
             }
+            return -1
         } else {
             return -1
         }

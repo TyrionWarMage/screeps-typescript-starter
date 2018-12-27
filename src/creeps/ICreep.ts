@@ -8,7 +8,7 @@ interface CreepMemory {
 interface Creep {
     act(): void;
     actHarvest(): void;
-
+    checkRenew(): boolean;
     moveByFlowField(target: Source | StructureSpawn): number;
     getDropoff(): string;
 }

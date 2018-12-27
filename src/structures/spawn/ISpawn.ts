@@ -1,6 +1,7 @@
 interface StructureSpawn {
     initiated: boolean;
     spawnQueue: CreepBuildStep[];
+    renewQueue: String[];
     preTask(): void;
     postTask(): void;
     init(): void;
@@ -13,6 +14,7 @@ interface StructureSpawn {
 interface SpawnMemory {
     initiated: boolean;
     spawnQueue: CreepBuildStep[];
+    renewQueue: String[];
     navigation: NavigationMemory;
 }
 

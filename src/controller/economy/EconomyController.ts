@@ -35,10 +35,14 @@ export class EconomyController {
         actionSpace = actionSpace.concat(this.getHarvesterPlanActions());
 
         const sources = {} as { [id: string]: SourceMemory };
+        let observedTP = 1;
         for (const source of this.room.turnCache.environment.sources) {
             sources[source.id] = source.memory;
+            if (source.memory.statistics.amounts.length > 1) {
+                observedTP += source.memory.statistics.amounts.sum() / (source.memory.statistics.times[source.memory.statistics.times.length - 1] - source.memory.statistics.times[0]);
+            }
         }
-        const initState = new PlanState(sources, this.room.memory.unitConfiguration.configurations, 1, 0);
+        const initState = new PlanState(sources, this.room.memory.unitConfiguration.configurations, observedTP, 0);
         const planner = new GreedyPlanner(actionSpace, initState)
         return planner.computePlan()
     }

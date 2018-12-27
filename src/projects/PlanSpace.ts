@@ -49,7 +49,7 @@ export class HarvesterBuildAction implements PlanAction {
 
     public update(state: PlanState) {
         const unitConfig = state.unitConfigurations.perSource[this.sourceid].current;
-        const duration = unitConfig.cost / state.throughput;
+        const duration = Math.floor(unitConfig.cost / state.throughput);
 
         state.elapsedTime += duration;
         state.sources[this.sourceid].status.assignedHarvester += 1;

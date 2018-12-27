@@ -115,13 +115,18 @@ Room.prototype.act = function () {
             this.init()
         } else {
             this.setTurnCache();
-            this.checkProject();
 
             for (const source of this.turnCache.environment.sources) {
                 source.memory.status.assignedHarvester = 0
             }
             for (const creep of this.turnCache.creeps.my) {
                 creep.act();
+            }
+
+            this.checkProject();
+
+            if ((Game.time) % 3 === 0) {
+                this.printStatistics()
             }
         }
     }
@@ -132,5 +137,17 @@ Room.prototype.determineNextProject = function () {
     this.project = ecoControl.getProject();
     console.log(this + ":" + this.project.name)
     this.turnCache.structure.spawns[0].memory.spawnQueue = this.turnCache.structure.spawns[0].memory.spawnQueue.concat(this.project.spawnSteps)
+}
+
+Room.prototype.printStatistics = function () {
+    let expectedTP = 1;
+    let observedTP = 1;
+    for (const source of this.turnCache.environment.sources) {
+        if (source.memory.statistics.amounts.length > 1) {
+            observedTP += source.memory.statistics.amounts.sum() / (source.memory.statistics.times[source.memory.statistics.times.length - 1] - source.memory.statistics.times[0]);
+        }
+        expectedTP += source.memory.status.assignedHarvester * this.memory.unitConfiguration.configurations.perSource[source.id].current.throughput;
+    }
+    console.log(this + ":" + observedTP.toFixed(2) + "/" + expectedTP.toFixed(2) + " observed/expected energy throughput ");
 }
 

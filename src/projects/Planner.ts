@@ -63,7 +63,7 @@ export class GreedyPlanner {
 
     public computePlan() {
         const bestIdx = this.rootNode.getMaxIdx();
-        console.log("Best plan evaluated with " + this.rootNode.getValueAt(bestIdx) + " taking " + this.rootNode.getChildAt(bestIdx).getState().elapsedTime)
+        console.log("Best plan evaluated with " + this.rootNode.getValueAt(bestIdx).toFixed(4) + " taking " + this.rootNode.getChildAt(bestIdx).getState().elapsedTime)
         return this.rootNode.getActionAt(bestIdx).steps;
 
     }

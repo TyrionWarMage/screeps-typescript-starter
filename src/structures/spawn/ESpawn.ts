@@ -27,6 +27,15 @@ Object.defineProperties(StructureSpawn.prototype, {
         set(value) {
             this.memory.spawnQueue = value;
         }
+    },
+    renewQueue: {
+        configurable: true,
+        get() {
+            return this.memory.renewQueue;
+        },
+        set(value) {
+            this.memory.renewQueue = value;
+        }
     }
 });
 
@@ -47,6 +56,7 @@ StructureSpawn.prototype.initMemory = function () {
         freeNeighbours: this.pos.getWalkableNeighbours().length,
     };
     this.memory.spawnQueue = [];
+    this.memory.renewQueue = [];
 
     for (const source of this.room.find(FIND_SOURCES) as Source[]) {
         this.pos.getFlowFieldList(this.memory.navigation.flowFieldQueue, this.memory.navigation.flowField, source.pos);
@@ -78,10 +88,12 @@ function getRandomName(prefix: string) {
 }
 
 StructureSpawn.prototype.processTask = function (buildTask: CreepBuildStep) {
-    console.log(this + buildTask.name);
     if (buildTask.creepType === Worktype.HARVEST) {
         const modules = this.room.memory.unitConfiguration.configurations.perSource[(buildTask as HarvesterCreepBuildStep).source].current.modules;
         const name = getRandomName("Harvester")
+        const src = (Game.getObjectById((buildTask as HarvesterCreepBuildStep).source) as Source);
+        src.updateStatistics(0);
+        console.log(this + ":Building harvester " + (src.memory.status.assignedHarvester + 1) + "/" + src.memory.status.maxHarvester + " for " + src);
         this.spawnCreep(modules, name, {
             memory: {
                 workType: Worktype.HARVEST,
@@ -114,7 +126,7 @@ StructureSpawn.prototype.act = function () {
     if (!this.initiated) {
         this.init();
     }
-    if (!this.spawning && this.spawnQueue.length > 0 && this.spawnQueue[0].cost < this.room.energyAvailable) {
+    if (!this.spawning && this.spawnQueue.length > 0 && this.spawnQueue[0].cost < this.room.energyAvailable && this.renewQueue.length === 0) {
         this.processTask(this.spawnQueue.shift() as CreepBuildStep);
     }
 }

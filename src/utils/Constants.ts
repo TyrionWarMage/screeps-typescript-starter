@@ -13,7 +13,7 @@ export enum Worktype {
 }
 
 export class Constants {
-    public static MAX_STATISTICS_LENGTH = 200;
+    public static MAX_STATISTICS_LENGTH = 100;
     public static OUTLIER_STD_FACTOR = 1.25;
 }
 

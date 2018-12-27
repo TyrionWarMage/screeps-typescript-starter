@@ -30,6 +30,7 @@ interface Room {
     setTurnCache(): void;
     determineNextProject(): void;
     checkProject(): void;
+    printStatistics(): void;
 }
 
 interface RoomMemory {

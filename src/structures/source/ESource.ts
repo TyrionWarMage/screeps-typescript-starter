@@ -45,6 +45,10 @@ Source.prototype.init = function () {
             nextContainer: undefined,
             assignedHarvester: 0,
             maxHarvester: 0
+        },
+        statistics: {
+            times: [],
+            amounts: [],
         }
     }
 }
@@ -53,5 +57,13 @@ Source.prototype.computeMaxHarvesters = function (config: UnitConfig) {
     const maxByThroughput = this.energyCapacity / config.throughput;
     const maxBySlots = this.memory.navigation.freeNeighbours * ((config.travelTime + config.workTime) / config.workTime);
     this.memory.status.maxHarvester = Math.floor(Math.min(maxBySlots, maxByThroughput));
-    // this.memory.status.maxHarvester = Math.floor((Math.min(maxBySlots, maxByThroughput) - this.memory.navigation.freeNeighbours) * Constants.CROWDING_FACTOR + this.memory.navigation.freeNeighbours);
+}
+
+Source.prototype.updateStatistics = function (amount: number) {
+    this.memory.statistics.amounts.push(amount);
+    this.memory.statistics.times.push(Game.time);
+    if (this.memory.statistics.amounts.length > Constants.MAX_STATISTICS_LENGTH) {
+        this.memory.statistics.amounts.splice(0, 20);
+        this.memory.statistics.times.splice(0, 20);
+    }
 }
