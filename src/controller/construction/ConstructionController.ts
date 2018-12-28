@@ -7,7 +7,7 @@ export class ConstructionController {
         this.withoutCreepsCostMatrix = new PathFinder.CostMatrix;
         this.room.find(FIND_STRUCTURES).forEach((struct) => {
             if ((struct.structureType !== STRUCTURE_RAMPART ||
-                !struct.my || struct.isPublic)
+                !struct.my || !struct.isPublic)
                 && struct.structureType !== STRUCTURE_ROAD) {
                 this.withoutCreepsCostMatrix.set(struct.pos.x, struct.pos.y, 0xff);
             }

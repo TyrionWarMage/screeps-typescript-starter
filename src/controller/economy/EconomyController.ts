@@ -39,6 +39,7 @@ export class EconomyController {
         for (const source of this.room.turnCache.environment.sources) {
             sources[source.id] = source.memory;
             if (source.memory.statistics.amounts.length > 1) {
+                source.memory.statistics.amounts.sum = Array.prototype.sum
                 observedTP += source.memory.statistics.amounts.sum() / (source.memory.statistics.times[source.memory.statistics.times.length - 1] - source.memory.statistics.times[0]);
             }
         }

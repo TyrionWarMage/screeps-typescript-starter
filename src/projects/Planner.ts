@@ -62,8 +62,9 @@ export class GreedyPlanner {
     }
 
     public computePlan() {
+        const start = Game.cpu.getUsed();
         const bestIdx = this.rootNode.getMaxIdx();
-        console.log("Best plan evaluated with " + this.rootNode.getValueAt(bestIdx).toFixed(4) + " taking " + this.rootNode.getChildAt(bestIdx).getState().elapsedTime)
+        console.log("CPU Usage: " + (Game.cpu.getUsed() - start).toFixed(3) + " Best plan evaluated with " + this.rootNode.getValueAt(bestIdx).toFixed(4) + " taking " + this.rootNode.getChildAt(bestIdx).getState().elapsedTime)
         return this.rootNode.getActionAt(bestIdx).steps;
 
     }
