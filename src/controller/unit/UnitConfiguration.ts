@@ -18,39 +18,14 @@ export class UnitConfigurationController {
 
     private getEmptyConfig() {
         const config = {
-            version: 0,
-            current:
-            {
-                modules: [] as BodyPartConstant[],
-                cost: 0,
-                throughput: 0,
-                workTime: 0,
-                travelTime: 0
-            },
-            next:
-            {
-                modules: [] as BodyPartConstant[],
-                cost: 0,
-                throughput: 0,
-                workTime: 0,
-                travelTime: 0
-            },
-            shortTravel:
-            {
-                modules: [] as BodyPartConstant[],
-                cost: 0,
-                throughput: 0,
-                workTime: 0,
-                travelTime: 0
-            },
-            roadTravel:
-            {
-                modules: [] as BodyPartConstant[],
-                cost: 0,
-                throughput: 0,
-                workTime: 0,
-                travelTime: 0
-            }
+            modules: [] as BodyPartConstant[],
+            cost: 0,
+            throughput: 0,
+            throughputRoad: 0,
+            throughputShort: 0,
+            workTime: 0,
+            travelTime: 0,
+            version: 0
         }
         return config;
     }
@@ -58,10 +33,10 @@ export class UnitConfigurationController {
     public init() {
         this.room.memory.unitConfiguration = { configurations: { perSource: {} }, lastEnergyValue: 0 };
         for (const source of this.room.find(FIND_SOURCES) as Source[]) {
-            this.room.memory.unitConfiguration.configurations.perSource[source.id] = this.getEmptyConfig()
+            this.room.memory.unitConfiguration.configurations.perSource[source.id] = [this.getEmptyConfig()]
         }
-        this.room.memory.unitConfiguration.configurations[Worktype.BUILD] = this.getEmptyConfig();
-        this.room.memory.unitConfiguration.configurations[Worktype.CARRY] = this.getEmptyConfig();
+        this.room.memory.unitConfiguration.configurations[Worktype.BUILD] = [this.getEmptyConfig()];
+        this.room.memory.unitConfiguration.configurations[Worktype.CARRY] = [this.getEmptyConfig()];
     }
 
     public approximateWork(parts: BodyPartConstant[], workPerTick: number, travelDist: number, travelCost: number) {
@@ -126,25 +101,35 @@ export class UnitConfigurationController {
         if (this.room.memory.unitConfiguration.lastEnergyValue !== this.room.energyCapacityAvailable) {
 
             const newEntry = this.computeBuilder();
-            if (!newEntry.current.modules.equal(this.room.memory.unitConfiguration.configurations[Worktype.BUILD].current.modules)) {
-                newEntry.version = this.room.memory.unitConfiguration.configurations[Worktype.BUILD].version + 1;
-            } else {
-                newEntry.version = this.room.memory.unitConfiguration.configurations[Worktype.BUILD].version;
+            if (!newEntry.modules.equal(this.room.memory.unitConfiguration.configurations[Worktype.BUILD][this.room.memory.unitConfiguration.configurations[Worktype.BUILD].length - 1].modules)) {
+                newEntry.version = this.room.memory.unitConfiguration.configurations[Worktype.BUILD][this.room.memory.unitConfiguration.configurations[Worktype.BUILD].length - 1].version + 1;
+                this.room.memory.unitConfiguration.configurations[Worktype.BUILD].push(newEntry)
             }
-            this.room.memory.unitConfiguration.configurations[Worktype.BUILD] = newEntry;
 
             for (const source of this.room.turnCache.environment.sources) {
                 const newEntry = this.computeHarvesterForSource(source.memory, source.pos);
-                if (!newEntry.current.modules.equal(this.room.memory.unitConfiguration.configurations.perSource[source.id].current.modules)) {
-                    newEntry.version = this.room.memory.unitConfiguration.configurations.perSource[source.id].version + 1;
-                } else {
-                    newEntry.version = this.room.memory.unitConfiguration.configurations.perSource[source.id].version;
+                if (!newEntry.modules.equal(this.room.memory.unitConfiguration.configurations.perSource[source.id][this.room.memory.unitConfiguration.configurations.perSource[source.id].length - 1].modules)) {
+                    newEntry.version = this.room.memory.unitConfiguration.configurations.perSource[source.id][this.room.memory.unitConfiguration.configurations.perSource[source.id].length - 1].version + 1;
+                    this.room.memory.unitConfiguration.configurations.perSource[source.id].push(newEntry);
                 }
-                this.room.memory.unitConfiguration.configurations.perSource[source.id] = newEntry;
             }
 
             console.log(this.room + ':Recomputed unit configurations for ' + this.room.memory.unitConfiguration.lastEnergyValue + ' => ' + this.room.energyCapacityAvailable)
             this.room.memory.unitConfiguration.lastEnergyValue = this.room.energyCapacityAvailable;
+        }
+    }
+
+    public removeConfiguration(type: Worktype, version: number, sourceid?: string) {
+        let configs;
+        if (type === Worktype.HARVEST && sourceid !== undefined) {
+            configs = this.room.memory.unitConfiguration.configurations.perSource[sourceid]
+        } else {
+            configs = this.room.memory.unitConfiguration.configurations[type]
+        }
+        for (let i = configs.length - 1; i >= 0; i--) {
+            if (configs[i].version === version) {
+                delete configs[i]
+            }
         }
     }
 
@@ -184,11 +169,6 @@ export class UnitConfigurationController {
             }
         }
 
-        const approxNextCost = determineBodyCost(work);
-        const approxNextWorkEntry = this.approximateWork(work, workPerTick, travelDist - 1, travelCost - 1);
-        const approxNextWorkModules = JSON.parse(JSON.stringify(work))
-        approxNextWorkModules.sort();
-
         work.splice(-1 * lastAdd, lastAdd);
         const approxCost = determineBodyCost(work);
         const approxWorkEntry = this.approximateWork(work, workPerTick, travelDist - 1, travelCost - 1);
@@ -198,39 +178,14 @@ export class UnitConfigurationController {
         const approxRoadTravelEntry = this.approximateWork(work, workPerTick, travelDist - 1, travelDist * 0.5 - 0.5);
 
         return {
-            version: 0,
-            current:
-            {
-                modules: work,
-                cost: approxCost,
-                throughput: approxWorkEntry[0],
-                workTime: approxWorkEntry[1],
-                travelTime: approxWorkEntry[2]
-            },
-            next:
-            {
-                modules: approxNextWorkModules,
-                cost: approxNextCost,
-                throughput: approxNextWorkEntry[0],
-                workTime: approxNextWorkEntry[1],
-                travelTime: approxNextWorkEntry[2]
-            },
-            shortTravel:
-            {
-                modules: work,
-                cost: approxCost,
-                throughput: approxShortTravelWorkEntry[0],
-                workTime: approxShortTravelWorkEntry[1],
-                travelTime: approxShortTravelWorkEntry[2]
-            },
-            roadTravel:
-            {
-                modules: work,
-                cost: approxCost,
-                throughput: approxRoadTravelEntry[0],
-                workTime: approxRoadTravelEntry[1],
-                travelTime: approxRoadTravelEntry[2]
-            },
+            modules: work,
+            cost: approxCost,
+            throughput: approxWorkEntry[0],
+            throughputRoad: approxRoadTravelEntry[0],
+            throughputShort: approxShortTravelWorkEntry[0],
+            workTime: approxWorkEntry[1],
+            travelTime: approxWorkEntry[2],
+            version: 0
         }
     }
 }

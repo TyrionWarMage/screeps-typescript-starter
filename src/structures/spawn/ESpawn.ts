@@ -110,17 +110,18 @@ function getRandomName(prefix: string) {
 
 StructureSpawn.prototype.processTask = function (buildTask: CreepBuildStep) {
     if (buildTask.creepType === Worktype.HARVEST) {
-        const modules = this.room.memory.unitConfiguration.configurations.perSource[(buildTask as HarvesterCreepBuildStep).source].current.modules;
+        const config = this.room.memory.unitConfiguration.configurations.perSource[(buildTask as HarvesterCreepBuildStep).source][this.room.memory.unitConfiguration.configurations.perSource[(buildTask as HarvesterCreepBuildStep).source].length - 1];
         const name = getRandomName("Harvester")
         const src = (Game.getObjectById((buildTask as HarvesterCreepBuildStep).source) as Source);
         src.updateStatistics(0);
         console.log(this + ":Building harvester " + (src.memory.status.assignedHarvester + 1) + "/" + src.memory.status.maxHarvester + " for " + src);
-        this.spawnCreep(modules, name, {
+        this.spawnCreep(config.modules, name, {
             memory: {
                 workType: Worktype.HARVEST,
                 currentTarget: (buildTask as HarvesterCreepBuildStep).source,
                 movingToWorkplace: true,
-                workplace: (buildTask as HarvesterCreepBuildStep).source
+                workplace: (buildTask as HarvesterCreepBuildStep).source,
+                version: config.version
             }
         });
     }

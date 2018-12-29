@@ -3,6 +3,7 @@ interface CreepMemory {
     workplace: string;
     currentTarget: string,
     movingToWorkplace: boolean,
+    version: number,
 }
 
 interface Creep {

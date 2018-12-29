@@ -18,7 +18,7 @@ export class ConstructionController {
         return
     }
 
-    public createRoadProject(from: RoomPosition, to: RoomPosition, worker: UnitConfigEntry) {
+    public createRoadProject(from: RoomPosition, to: RoomPosition, worker: UnitConfig) {
         const path = PathFinder.search(from, to, {
             roomCallback: (roomName) => {
                 return this.withoutCreepsCostMatrix;

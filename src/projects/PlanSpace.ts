@@ -51,7 +51,7 @@ export class HarvesterBuildAction implements PlanAction {
     }
 
     public update(state: PlanState) {
-        const unitConfig = state.unitConfigurations.perSource[this.sourceid].current;
+        const unitConfig = state.unitConfigurations.perSource[this.sourceid][state.unitConfigurations.perSource[this.sourceid].length - 1];
         const duration = Math.floor(unitConfig.cost / state.throughput);
 
         state.elapsedTime += duration;
@@ -87,7 +87,7 @@ export class BuilderBuildAction implements PlanAction {
     }
 
     public update(state: PlanState) {
-        const unitConfig = state.unitConfigurations[Worktype.BUILD].current;
+        const unitConfig = state.unitConfigurations[Worktype.BUILD][state.unitConfigurations[Worktype.BUILD].length - 1];
         const duration = Math.floor(unitConfig.cost / state.throughput);
 
         state.elapsedTime += duration;

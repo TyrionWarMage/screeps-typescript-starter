@@ -2,6 +2,7 @@ import { UnitConfigurationController } from "../unit/UnitConfiguration";
 import { ConstructionController } from "../construction/ConstructionController";
 import { PlanState, HarvesterBuildAction } from "projects/PlanSpace";
 import { GreedyPlanner } from "projects/Planner";
+import { Worktype } from "utils/Constants";
 
 export class EconomyController {
     private room: Room;
@@ -15,16 +16,22 @@ export class EconomyController {
     }
 
     public init() {
-        this.unitConfig.init()
+        this.unitConfig.init();
+        this.unitConfig.computeAllConfigurations();
+        this.unitConfig.removeConfiguration(Worktype.BUILD, 0);
+        this.unitConfig.removeConfiguration(Worktype.CARRY, 0);
+        for (const source of this.room.turnCache.environment.sources) {
+            this.unitConfig.removeConfiguration(Worktype.HARVEST, 0, source.id);
+            const harvesterConfig = this.unitConfig.getHarvesterConfigurationForSource(source.id);
+            source.computeMaxHarvesters(harvesterConfig[harvesterConfig.length - 1]);
+        }
     }
 
     private getHarvesterPlanActions() {
         const planActions = [] as HarvesterBuildAction[];
-        this.unitConfig.computeAllConfigurations();
         for (const source of this.room.turnCache.environment.sources) {
             const harvesterConfig = this.unitConfig.getHarvesterConfigurationForSource(source.id);
-            source.computeMaxHarvesters(harvesterConfig.current);
-            planActions.push(new HarvesterBuildAction(source.id, harvesterConfig.current.cost));
+            planActions.push(new HarvesterBuildAction(source.id, harvesterConfig[harvesterConfig.length - 1].cost));
         }
         return planActions
 

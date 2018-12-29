@@ -6,23 +6,18 @@ interface RoomMemory {
 }
 
 interface AllUnitConfigurations {
-    [id: number]: UnitConfigEntry,
-    perSource: { [id: string]: UnitConfigEntry }
-}
-
-interface UnitConfigEntry {
-    current: UnitConfig;
-    next: UnitConfig;
-    shortTravel: UnitConfig;
-    roadTravel: UnitConfig;
-    version: number;
+    [id: number]: UnitConfig[],
+    perSource: { [id: string]: UnitConfig[] }
 }
 
 interface UnitConfig {
     cost: number;
     throughput: number;
+    throughputRoad: number;
+    throughputShort: number;
     modules: BodyPartConstant[];
     workTime: number;
     travelTime: number;
+    version: number;
 }
 

@@ -159,6 +159,9 @@ Room.prototype.setTurnCache = function () {
 Room.prototype.act = function () {
     if (this.controller && this.controller.my) {
         if (this.initiated === undefined || this.initiated < 100) {
+            if (this.initiated !== undefined) {
+                this.setTurnCache();
+            }
             this.init()
         } else {
             this.setTurnCache();
@@ -198,7 +201,7 @@ Room.prototype.printStatistics = function () {
             source.memory.statistics.amounts.sum = Array.prototype.sum
             observedTP += source.memory.statistics.amounts.sum() / (source.memory.statistics.times[source.memory.statistics.times.length - 1] - source.memory.statistics.times[0]);
         }
-        expectedTP += source.memory.status.assignedHarvester * this.memory.unitConfiguration.configurations.perSource[source.id].current.throughput;
+        expectedTP += source.memory.status.assignedHarvester * this.memory.unitConfiguration.configurations.perSource[source.id][this.memory.unitConfiguration.configurations.perSource[source.id].length - 1].throughput;
     }
     console.log(this + ":" + observedTP.toFixed(2) + "/" + expectedTP.toFixed(2) + " observed/expected energy throughput ");
 }
