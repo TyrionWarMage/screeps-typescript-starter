@@ -35,7 +35,8 @@ StructureContainer.prototype.init = function () {
         {
             flowField: flowField,
             flowFieldQueue: flowFieldQueue,
-            freeNeighbours: this.pos.getWalkableNeighbours().length
+            freeNeighbours: this.pos.getWalkableNeighbours().length,
+            isValid: false
         },
         initiated: true,
         status: {

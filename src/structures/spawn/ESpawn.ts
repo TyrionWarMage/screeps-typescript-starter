@@ -131,7 +131,7 @@ StructureSpawn.prototype.init = function () {
 }
 
 StructureSpawn.prototype.isAvailable = function () {
-    return this.spawnQueue.length === 0 && !this.spawning && this.repairQueue.length === 0
+    return this.spawnQueue.length === 0 && !this.spawning && this.renewQueue.length === 0
 }
 
 StructureSpawn.prototype.preTask = () => {
