@@ -188,11 +188,20 @@ RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, t
                     flowField[neighbour.x][neighbour.y].push({ dir: neighbour.getDirectionTo(currentPos), dist: flowField[currentPos.x][currentPos.y][0].dist, cost: currentCost });
                 } else {
                     let sortIndex = 0;
-                    while (sortIndex < flowField[neighbour.x][neighbour.y].length && flowField[neighbour.x][neighbour.y][0].cost < currentCost + pathCost) {
+                    while (sortIndex < flowField[neighbour.x][neighbour.y].length && flowField[neighbour.x][neighbour.y][sortIndex].cost < currentCost + pathCost) {
                         sortIndex++
                     }
                     if (flowField[neighbour.x][neighbour.y].length === 0 || currentCost + pathCost < flowField[neighbour.x][neighbour.y][0].cost) {
                         Game.rooms[this.roomName].visual.writeText("" + (currentCost + pathCost), neighbour.x, neighbour.y)
+                        if (flowField[neighbour.x][neighbour.y].length > 0) {
+                            let index = -1
+                            flowFieldQueue.forEach((x, i) => {
+                                if (x.pos.x === neighbour.x && x.pos.y === neighbour.y && x.pos.roomName === neighbour.roomName) {
+                                    index = i
+                                }
+                            })
+                            flowFieldQueue.splice(index, 1)
+                        }
                         addSortedToFlowFieldQueue(flowFieldQueue, { pos: neighbour, cost: currentCost + pathCost, heuristic: neighbour.getRangeTo(target) })
                     }
                     if (flowField[neighbour.x][neighbour.y].length === sortIndex) {
