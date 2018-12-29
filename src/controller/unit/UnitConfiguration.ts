@@ -1,4 +1,4 @@
-import { Worktype, Constants } from "utils/Constants"
+import { Constants } from "utils/Constants"
 
 function determineBodyCost(parts: BodyPartConstant[]) {
     let cost = 0;
@@ -9,7 +9,7 @@ function determineBodyCost(parts: BodyPartConstant[]) {
 }
 
 
-export class UnitConfigurationController {
+export class UnitConfigurationController implements UnitConfigurationControllerInterface {
     private room: Room;
 
     constructor(room: Room) {
@@ -81,8 +81,9 @@ export class UnitConfigurationController {
         return workoptions;
     }
 
-    public getHarvesterConfigurationForSource(sourceid: string) {
-        return this.room.memory.unitConfiguration.configurations.perSource[sourceid];
+    public computeCarry() {
+        // ToDo
+        return this.getEmptyConfig()
     }
 
     public computeBuilder() {

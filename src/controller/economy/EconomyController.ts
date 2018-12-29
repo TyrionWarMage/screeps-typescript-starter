@@ -2,11 +2,10 @@ import { UnitConfigurationController } from "../unit/UnitConfiguration";
 import { ConstructionController } from "../construction/ConstructionController";
 import { PlanState, HarvesterBuildAction } from "projects/PlanSpace";
 import { GreedyPlanner } from "projects/Planner";
-import { Worktype } from "utils/Constants";
 
 export class EconomyController {
     private room: Room;
-    private unitConfig: UnitConfigurationController;
+    public unitConfig: UnitConfigurationController;
     public constructionController: ConstructionController;
 
     constructor(room: Room) {
@@ -22,7 +21,7 @@ export class EconomyController {
         this.unitConfig.removeConfiguration(Worktype.CARRY, 0);
         for (const source of this.room.turnCache.environment.sources) {
             this.unitConfig.removeConfiguration(Worktype.HARVEST, 0, source.id);
-            const harvesterConfig = this.unitConfig.getHarvesterConfigurationForSource(source.id);
+            const harvesterConfig = this.room.memory.unitConfiguration.configurations.perSource[source.id];
             source.computeMaxHarvesters(harvesterConfig[harvesterConfig.length - 1]);
         }
     }
@@ -30,7 +29,7 @@ export class EconomyController {
     private getHarvesterPlanActions() {
         const planActions = [] as HarvesterBuildAction[];
         for (const source of this.room.turnCache.environment.sources) {
-            const harvesterConfig = this.unitConfig.getHarvesterConfigurationForSource(source.id);
+            const harvesterConfig = this.room.memory.unitConfiguration.configurations.perSource[source.id];
             planActions.push(new HarvesterBuildAction(source.id, harvesterConfig[harvesterConfig.length - 1].cost));
         }
         return planActions
@@ -52,7 +51,7 @@ export class EconomyController {
         }
         const initState = new PlanState(this.room.turnCache.structure.spawns[0].memory.status, sources, this.room.memory.unitConfiguration.configurations, observedTP, 0);
         const planner = new GreedyPlanner(actionSpace, initState)
-        return planner.computePlan()
+        return planner.computePlan(this.unitConfig)
     }
 
 }

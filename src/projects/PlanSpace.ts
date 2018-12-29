@@ -1,4 +1,3 @@
-import { Worktype, Finalize } from "../utils/Constants";
 export class PlanState implements PlanStateInterface {
     public spawn: SpawnStatusMemory;
     public sources: { [id: string]: SourceStatusMemory };
@@ -50,7 +49,7 @@ export class HarvesterBuildAction implements PlanAction {
         return state.sources[this.sourceid].maxHarvester > state.sources[this.sourceid].assignedHarvester;
     }
 
-    public update(state: PlanState) {
+    public update(state: PlanState, unitController: UnitConfigurationControllerInterface) {
         const unitConfig = state.unitConfigurations.perSource[this.sourceid][state.unitConfigurations.perSource[this.sourceid].length - 1];
         const duration = Math.floor(unitConfig.cost / state.throughput);
 
@@ -86,7 +85,7 @@ export class BuilderBuildAction implements PlanAction {
         return true;
     }
 
-    public update(state: PlanState) {
+    public update(state: PlanState, unitController: UnitConfigurationControllerInterface) {
         const unitConfig = state.unitConfigurations[Worktype.BUILD][state.unitConfigurations[Worktype.BUILD].length - 1];
         const duration = Math.floor(unitConfig.cost / state.throughput);
 
@@ -97,13 +96,13 @@ export class BuilderBuildAction implements PlanAction {
     }
 }
 
-export class SourceRoadBuildProject implements PlanAction {
+export class TargetedRoadBuildProject implements PlanAction {
     public steps: MultiStepProject;
     public name: string;
-    private sourceid: string;
+    private targetid: string;
 
-    constructor(sourceid: string, buildLocations: RoomPosition[]) {
-        this.name = "Build road for " + sourceid;
+    constructor(targetid: string, buildLocations: RoomPosition[]) {
+        this.name = "Build road for " + targetid;
         const constructionSteps = buildLocations.map((x) => {
             const step = {
                 name: "Build road at " + x,
@@ -113,23 +112,30 @@ export class SourceRoadBuildProject implements PlanAction {
             return step;
         });
         this.steps = {
-            name: "Build road for " + sourceid,
+            name: "Build road for " + targetid,
             spawnSteps: [],
             constructionSteps: constructionSteps,
             finalize: Finalize.BUILD_TARGETED_ROAD,
-            finalizeData: sourceid
+            finalizeData: targetid
         };
-        this.sourceid = sourceid;
+        this.targetid = targetid;
     }
 
 
     public isApplicable(state: PlanStateInterface): boolean {
-        return !state.sources[this.sourceid].hasRoad && state.spawn.availableBuilder > 0;
+        return !state.sources[this.targetid].hasRoad && state.spawn.availableBuilder > 0;
     }
 
-    public update(state: PlanStateInterface): PlanStateInterface {
-        state.sources[this.sourceid].hasRoad = true
-        // ToDo
+    public computeSteps() {
+
+    }
+
+    public update(state: PlanStateInterface, unitController: UnitConfigurationControllerInterface): PlanStateInterface {
+        state.sources[this.targetid].hasRoad = true
+
+        const unitConfig = state.unitConfigurations[Worktype.BUILD][0];
+        state.throughput += (unitConfig.throughputRoad - unitConfig.throughput) * (Game.getObjectById(this.targetid) as Source).memory.status.assignedHarvester
+
         return state
     }
 }

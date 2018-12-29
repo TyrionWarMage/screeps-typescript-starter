@@ -1,3 +1,15 @@
+interface UnitConfigurationControllerInterface {
+    computeCarry(): UnitConfig;
+    computeBuilder(): UnitConfig;
+
+    computeHarvesterForSource(sourceMemory: SourceMemory, sourcePos: RoomPosition): UnitConfig;
+
+    computeAllConfigurations(): void;
+
+    removeConfiguration(type: Worktype, version: number, sourceid?: string): void;
+
+};
+
 interface PlanStateInterface {
     spawn: SpawnStatusMemory;
     sources: { [id: string]: SourceStatusMemory };
@@ -12,7 +24,7 @@ interface PlanStateInterface {
 
 interface PlanAction {
     isApplicable(state: PlanStateInterface): boolean;
-    update(state: PlanStateInterface): PlanStateInterface;
+    update(state: PlanStateInterface, unitController: UnitConfigurationControllerInterface): PlanStateInterface;
     steps: MultiStepProject;
     name: string;
 }

@@ -1,5 +1,5 @@
 import { EconomyController } from "controller/economy/EconomyController";
-import { Finalize, Constants } from "utils/Constants";
+import { Constants } from "utils/Constants";
 
 Object.defineProperties(Room.prototype, {
     initiated: {

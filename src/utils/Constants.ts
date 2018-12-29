@@ -1,23 +1,24 @@
-export enum Worktype {
-    HARVEST,
-    UPGRADE,
-    BUILD,
-    REPAIR,
-    PAUSE,
-    CARRY,
-    MINER,
-    SCOUT,
-    COMBAT,
-    CLAIMER,
-    DEFENDER,
-}
+declare global {
+    export enum Worktype {
+        HARVEST,
+        UPGRADE,
+        BUILD,
+        REPAIR,
+        PAUSE,
+        CARRY,
+        MINER,
+        SCOUT,
+        COMBAT,
+        CLAIMER,
+        DEFENDER,
+    }
 
-export enum Finalize {
-    BUILD_TARGETED_ROAD,
-    BUILD_TARGETED_CONTAINER,
-    NO_FINALIZE
+    export enum Finalize {
+        BUILD_TARGETED_ROAD,
+        BUILD_TARGETED_CONTAINER,
+        NO_FINALIZE
+    }
 }
-
 export class Constants {
     public static MAX_STATISTICS_LENGTH = 100;
     public static OUTLIER_STD_FACTOR = 1.25;
