@@ -1,11 +1,11 @@
-Object.defineProperties(StructureExtension.prototype, {
+Object.defineProperties(StructureExtractor.prototype, {
     memory: {
         configurable: true,
         get() {
-            return Memory.extension[this.id];
+            return Memory.controller[this.id];
         },
         set(value) {
-            Memory.extension[this.id] = value;
+            Memory.controller[this.id] = value;
         }
     },
     initiated: {
@@ -19,7 +19,7 @@ Object.defineProperties(StructureExtension.prototype, {
     },
 });
 
-StructureExtension.prototype.init = function () {
+StructureExtractor.prototype.init = function () {
     const flowFieldQueue = new Array();
 
     const flowField = new Array<FlowFieldEntry[][]>(50);
@@ -40,7 +40,10 @@ StructureExtension.prototype.init = function () {
         },
         initiated: true,
         status: {
-            hasRoad: false
+            assignedMiner: 0,
+            maxMiner: 0,
+            hasRoad: false,
+            nextContainer: undefined,
         },
     }
 }

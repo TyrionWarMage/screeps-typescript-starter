@@ -116,7 +116,7 @@ export class SourceRoadBuildProject implements PlanAction {
             name: "Build road for " + sourceid,
             spawnSteps: [],
             constructionSteps: constructionSteps,
-            finalize: Finalize.BUILD_SOURCE_ROAD,
+            finalize: Finalize.BUILD_TARGETED_ROAD,
             finalizeData: sourceid
         };
         this.sourceid = sourceid;

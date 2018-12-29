@@ -52,6 +52,8 @@ Room.prototype.init = function () {
         Memory.sources = {}
         Memory.container = {}
         Memory.extensions = {}
+        Memory.controller = {}
+        Memory.extractor = {}
 
         this.initiated = 0;
     } else if (this.initiated !== undefined) {
@@ -64,11 +66,11 @@ Room.prototype.init = function () {
 
 Room.prototype.finalizeProject = function () {
     switch (this.project.finalize) {
-        case (Finalize.BUILD_SOURCE_ROAD):
-            (Game.getObjectById(this.project.finalizeData) as Source).memory.status.hasRoad = true
+        case (Finalize.BUILD_TARGETED_ROAD):
+            (Game.getObjectById(this.project.finalizeData) as Source | StructureController | StructureExtractor | StructureExtension).memory.status.hasRoad = true
             break;
-        case (Finalize.BUILD_SOURCE_CONTAINER):
-            (Game.getObjectById(this.project.finalizeData[0]) as Source).memory.status.nextContainer = this.project.finalizeData[1]
+        case (Finalize.BUILD_TARGETED_CONTAINER):
+            (Game.getObjectById(this.project.finalizeData[0]) as Source | StructureController | StructureExtractor).memory.status.nextContainer = this.project.finalizeData[1]
             break;
     }
 }

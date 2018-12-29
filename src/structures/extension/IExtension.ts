@@ -1,5 +1,5 @@
 interface ExtensionStatusMemory {
-
+    hasRoad: boolean
 }
 interface ExtensionMemory {
     navigation: NavigationMemory;
