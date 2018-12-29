@@ -37,7 +37,8 @@ Source.prototype.init = function () {
         {
             flowField: flowField,
             flowFieldQueue: flowFieldQueue,
-            freeNeighbours: this.pos.getWalkableNeighbours().length
+            freeNeighbours: this.pos.getWalkableNeighbours().length,
+            isValid: true
         },
         initiated: true,
         status: {

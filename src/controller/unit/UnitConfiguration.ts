@@ -1,4 +1,4 @@
-import { Worktype } from "utils/Constants"
+import { Worktype, Constants } from "utils/Constants"
 
 function determineBodyCost(parts: BodyPartConstant[]) {
     let cost = 0;
@@ -16,45 +16,52 @@ export class UnitConfigurationController {
         this.room = room;
     }
 
+    private getEmptyConfig() {
+        const config = {
+            version: 0,
+            current:
+            {
+                modules: [] as BodyPartConstant[],
+                cost: 0,
+                throughput: 0,
+                workTime: 0,
+                travelTime: 0
+            },
+            next:
+            {
+                modules: [] as BodyPartConstant[],
+                cost: 0,
+                throughput: 0,
+                workTime: 0,
+                travelTime: 0
+            },
+            shortTravel:
+            {
+                modules: [] as BodyPartConstant[],
+                cost: 0,
+                throughput: 0,
+                workTime: 0,
+                travelTime: 0
+            },
+            roadTravel:
+            {
+                modules: [] as BodyPartConstant[],
+                cost: 0,
+                throughput: 0,
+                workTime: 0,
+                travelTime: 0
+            }
+        }
+        return config;
+    }
+
     public init() {
         this.room.memory.unitConfiguration = { configurations: { perSource: {} }, lastEnergyValue: 0 };
         for (const source of this.room.find(FIND_SOURCES) as Source[]) {
-            this.room.memory.unitConfiguration.configurations.perSource[source.id] = {
-                version: 0,
-                current:
-                {
-                    modules: [] as BodyPartConstant[],
-                    cost: 0,
-                    throughput: 0,
-                    workTime: 0,
-                    travelTime: 0
-                },
-                next:
-                {
-                    modules: [] as BodyPartConstant[],
-                    cost: 0,
-                    throughput: 0,
-                    workTime: 0,
-                    travelTime: 0
-                },
-                shortTravel:
-                {
-                    modules: [] as BodyPartConstant[],
-                    cost: 0,
-                    throughput: 0,
-                    workTime: 0,
-                    travelTime: 0
-                },
-                roadTravel:
-                {
-                    modules: [] as BodyPartConstant[],
-                    cost: 0,
-                    throughput: 0,
-                    workTime: 0,
-                    travelTime: 0
-                }
-            }
+            this.room.memory.unitConfiguration.configurations.perSource[source.id] = this.getEmptyConfig()
         }
+        this.room.memory.unitConfiguration.configurations[Worktype.BUILD] = this.getEmptyConfig();
+        this.room.memory.unitConfiguration.configurations[Worktype.CARRY] = this.getEmptyConfig();
     }
 
     public approximateWork(parts: BodyPartConstant[], workPerTick: number, travelDist: number, travelCost: number) {
@@ -84,6 +91,13 @@ export class UnitConfigurationController {
                 workoptions.push([WORK, MOVE, MOVE]);
                 workoptions.push([CARRY, MOVE, MOVE]);
                 break;
+            case (Worktype.BUILD):
+                workoptions.push([WORK, WORK, MOVE]);
+                workoptions.push([WORK, CARRY, MOVE]);
+                workoptions.push([CARRY, CARRY, MOVE]);
+                workoptions.push([WORK, MOVE, MOVE]);
+                workoptions.push([CARRY, MOVE, MOVE]);
+                break;
             case (Worktype.CARRY):
                 workoptions.push([CARRY, CARRY, MOVE]);
                 workoptions.push([CARRY, MOVE, MOVE]);
@@ -96,6 +110,11 @@ export class UnitConfigurationController {
         return this.room.memory.unitConfiguration.configurations.perSource[sourceid];
     }
 
+    public computeBuilder() {
+        const newEntry = this.computeWorker(Worktype.BUILD, 1, this.room.energyCapacityAvailable, Constants.BUILDER_TRAVEL_DIST, Constants.BUILDER_TRAVEL_COST)
+        return newEntry;
+    }
+
     public computeHarvesterForSource(sourceMemory: SourceMemory, sourcePos: RoomPosition) {
         const spawn = this.room.turnCache.structure.spawns[0];
         const flowFieldEntry = sourcePos.getFlowFieldList(sourceMemory.navigation.flowFieldQueue, sourceMemory.navigation.flowField, spawn.pos)[0]
@@ -105,6 +124,15 @@ export class UnitConfigurationController {
 
     public computeAllConfigurations() {
         if (this.room.memory.unitConfiguration.lastEnergyValue !== this.room.energyCapacityAvailable) {
+
+            const newEntry = this.computeBuilder();
+            if (!newEntry.current.modules.equal(this.room.memory.unitConfiguration.configurations[Worktype.BUILD].current.modules)) {
+                newEntry.version = this.room.memory.unitConfiguration.configurations[Worktype.BUILD].version + 1;
+            } else {
+                newEntry.version = this.room.memory.unitConfiguration.configurations[Worktype.BUILD].version;
+            }
+            this.room.memory.unitConfiguration.configurations[Worktype.BUILD] = newEntry;
+
             for (const source of this.room.turnCache.environment.sources) {
                 const newEntry = this.computeHarvesterForSource(source.memory, source.pos);
                 if (!newEntry.current.modules.equal(this.room.memory.unitConfiguration.configurations.perSource[source.id].current.modules)) {
@@ -114,6 +142,7 @@ export class UnitConfigurationController {
                 }
                 this.room.memory.unitConfiguration.configurations.perSource[source.id] = newEntry;
             }
+
             console.log(this.room + ':Recomputed unit configurations for ' + this.room.memory.unitConfiguration.lastEnergyValue + ' => ' + this.room.energyCapacityAvailable)
             this.room.memory.unitConfiguration.lastEnergyValue = this.room.energyCapacityAvailable;
         }

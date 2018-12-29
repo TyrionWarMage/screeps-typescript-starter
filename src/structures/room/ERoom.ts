@@ -1,4 +1,5 @@
 import { EconomyController } from "controller/economy/EconomyController";
+import { Finalize, Constants } from "utils/Constants";
 
 Object.defineProperties(Room.prototype, {
     initiated: {
@@ -43,15 +44,32 @@ Room.prototype.init = function () {
         this.memory.project = {
             name: 'Init',
             constructionSteps: [],
-            spawnSteps: []
+            spawnSteps: [],
+            finalize: Finalize.NO_FINALIZE,
+            finalizeData: undefined
         }
+
         Memory.sources = {}
+        Memory.container = {}
+        Memory.extensions = {}
+
         this.initiated = 0;
     } else if (this.initiated !== undefined) {
         if (this.initSources()) {
             this.initController();
             this.initiated = 100;
         }
+    }
+}
+
+Room.prototype.finalizeProject = function () {
+    switch (this.project.finalize) {
+        case (Finalize.BUILD_SOURCE_ROAD):
+            (Game.getObjectById(this.project.finalizeData) as Source).memory.status.hasRoad = true
+            break;
+        case (Finalize.BUILD_SOURCE_CONTAINER):
+            (Game.getObjectById(this.project.finalizeData[0]) as Source).memory.status.nextContainer = this.project.finalizeData[1]
+            break;
     }
 }
 
@@ -66,8 +84,25 @@ Room.prototype.checkProject = function () {
         }
     }
     if (!isProjectRunning) {
+        if (this.project.finalize !== Finalize.NO_FINALIZE) {
+            this.finalizeProject();
+        }
         this.determineNextProject();
     }
+}
+
+Room.prototype.computeDecayRate = function (allRepairableStructures) {
+    let decayRate = 0
+    allRepairableStructures.forEach((x) => {
+        if (x.structureType === STRUCTURE_CONTAINER) {
+            decayRate += CONTAINER_DECAY / CONTAINER_DECAY_TIME_OWNED
+        } else if (x.structureType === STRUCTURE_ROAD) {
+            decayRate += ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME
+        } else if (x.structureType === STRUCTURE_RAMPART) {
+            decayRate += RAMPART_DECAY_AMOUNT / RAMPART_DECAY_AMOUNT
+        }
+    });
+    return decayRate
 }
 
 Room.prototype.setTurnCache = function () {
@@ -81,6 +116,13 @@ Room.prototype.setTurnCache = function () {
             creepTargetsInit[i][j] = 0;
         }
     }
+
+    const allRepairableStructures = this.find(FIND_STRUCTURES).filter((x) => {
+        return (x.structureType === STRUCTURE_CONTAINER
+            || x.structureType === STRUCTURE_ROAD
+            || x.structureType === STRUCTURE_RAMPART)
+    }) as (StructureContainer | StructureRoad | StructureRampart)[];
+    const repairSites = allRepairableStructures.filter((x) => (x.hits / x.hitsMax) < Constants.REPAIR_THRESHOLD_PERCENT);
 
     this.turnCache = {
         creeps:
@@ -104,8 +146,13 @@ Room.prototype.setTurnCache = function () {
             spawns: spawnSites,
             constructionSites: this.find(FIND_MY_CONSTRUCTION_SITES),
             energyDropoff: spawnSites,
+            repairSites: repairSites
         },
-        creepTargets: creepTargetsInit,
+        status:
+        {
+            decayRate: this.computeDecayRate(allRepairableStructures),
+        },
+        creepMoveTargets: creepTargetsInit,
     };
 }
 
@@ -116,9 +163,13 @@ Room.prototype.act = function () {
         } else {
             this.setTurnCache();
 
+            // reset creep amount logging
+            this.turnCache.structure.spawns[0].memory.status.availableBuilder = 0;
+            this.turnCache.structure.spawns[0].memory.status.availableCarry = 0;
             for (const source of this.turnCache.environment.sources) {
                 source.memory.status.assignedHarvester = 0
             }
+
             for (const creep of this.turnCache.creeps.my) {
                 creep.act();
             }

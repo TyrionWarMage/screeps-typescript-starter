@@ -2,7 +2,7 @@ import { Constants } from "utils/Constants";
 
 function addSortedToFlowFieldQueue(list: FlowFieldQueueEntry[], item: FlowFieldQueueEntry) {
     let insertIdx = 0;
-    while (list.length > insertIdx && list[insertIdx].cost + Constants.AStarWeight * list[insertIdx].heuristic < item.cost + Constants.AStarWeight * item.heuristic) {
+    while (list.length > insertIdx && list[insertIdx].cost + Constants.ASTAR_WEIGHT * list[insertIdx].heuristic < item.cost + Constants.ASTAR_WEIGHT * item.heuristic) {
         insertIdx++;
     }
     list.splice(insertIdx, 0, item)
@@ -159,9 +159,9 @@ RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, t
             flowFieldQueueEntry.heuristic = this.getRangeTo(target);
         }
         flowFieldQueue.sort((n1, n2) => {
-            if (n1.cost + Constants.AStarWeight * n1.heuristic > n2.cost + Constants.AStarWeight * n2.heuristic) {
+            if (n1.cost + Constants.ASTAR_WEIGHT * n1.heuristic > n2.cost + Constants.ASTAR_WEIGHT * n2.heuristic) {
                 return 1
-            } else if (n1.cost + Constants.AStarWeight * n1.heuristic < n2.cost + Constants.AStarWeight * n2.heuristic) {
+            } else if (n1.cost + Constants.ASTAR_WEIGHT * n1.heuristic < n2.cost + Constants.ASTAR_WEIGHT * n2.heuristic) {
                 return -1
             } else {
                 return 0
@@ -171,7 +171,7 @@ RoomPosition.prototype.computeFlowField = function (flowFieldQueue, flowField, t
 
     let callCounter = 0;
     let currentHeuristic = 0;
-    while (currentCost + Constants.AStarWeight * currentHeuristic < maxCost) {
+    while (currentCost + Constants.ASTAR_WEIGHT * currentHeuristic < maxCost) {
         callCounter++;
         const queueEntry = flowFieldQueue.shift() as FlowFieldQueueEntry
         currentPos = queueEntry.pos;

@@ -1,7 +1,10 @@
+
+
 interface StructureSpawn {
     initiated: number;
-    spawnQueue: CreepBuildStep[];
+    spawnQueue: HarvesterCreepBuildStep[];
     renewQueue: String[];
+    repairQueue: String[];
     preTask(): void;
     postTask(): void;
     init(): void;
@@ -11,10 +14,15 @@ interface StructureSpawn {
     processTask(buildTask: CreepBuildStep): void;
 }
 
+interface SpawnStatusMemory {
+    availableBuilder: number;
+    availableCarry: number;
+}
 interface SpawnMemory {
     initiated: number;
     spawnQueue: CreepBuildStep[];
     renewQueue: String[];
     navigation: NavigationMemory;
+    status: SpawnStatusMemory;
 }
 

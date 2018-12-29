@@ -1,5 +1,6 @@
 interface PlanStateInterface {
-    sources: { [id: string]: SourceMemory };
+    spawn: SpawnStatusMemory;
+    sources: { [id: string]: SourceStatusMemory };
     throughput: number;
     elapsedTime: number;
     unitConfigurations: AllUnitConfigurations;
@@ -21,13 +22,20 @@ interface Project {
 }
 
 interface MultiStepProject extends Project {
-    constructionSteps: MultiStepProject[];
+    constructionSteps: StructureConstructionStep[];
     spawnSteps: CreepBuildStep[];
+    finalize: any;
+    finalizeData: any;
 }
 
 interface CreepBuildStep extends Project {
     creepType: number;
     cost: number;
+}
+
+interface StructureConstructionStep extends Project {
+    buildLocation: RoomPosition;
+    buildType: STRUCTURE_ROAD | STRUCTURE_CONTAINER;
 }
 
 interface HarvesterCreepBuildStep extends CreepBuildStep, Project {

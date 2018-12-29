@@ -54,11 +54,9 @@ class Node {
 export class GreedyPlanner {
 
     private rootNode: Node;
-    private actionSpace: PlanAction[];
 
     constructor(actionSpace: PlanAction[], initState: PlanState) {
         this.rootNode = new Node(initState, actionSpace, initState);
-        this.actionSpace = actionSpace;
     }
 
     public computePlan() {

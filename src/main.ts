@@ -4,6 +4,7 @@ import "structures/EStructure";
 import "structures/room/ERoom";
 import "creeps/ECreep"
 import "utils/ERoomVisual"
+import "utils/Constants"
 import { ErrorMapper } from "utils/ErrorMapper";
 
 

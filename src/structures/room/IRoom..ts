@@ -16,9 +16,14 @@ interface Room {
             controller: StructureController,
             spawns: StructureSpawn[]
             constructionSites: ConstructionSite[]
-            energyDropoff: StructureSpawn[]
+            energyDropoff: (StructureSpawn | StructureExtension | StructureContainer)[]
+            repairSites: Structure[]
         }
-        creepTargets: number[][];
+        status:
+        {
+            decayRate: number
+        }
+        creepMoveTargets: number[][];
     }
     project: MultiStepProject;
 
@@ -29,6 +34,8 @@ interface Room {
 
     setTurnCache(): void;
     determineNextProject(): void;
+    computeDecayRate(allRepairableStructures: (StructureContainer | StructureRoad | StructureRampart)[]): number;
+    finalizeProject(): void;
     checkProject(): void;
     printStatistics(): void;
 }

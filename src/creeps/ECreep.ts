@@ -6,6 +6,18 @@ Creep.prototype.act = function () {
             case (Worktype.HARVEST):
                 this.actHarvest();
                 break;
+            case (Worktype.BUILD):
+                this.actBuild();
+                break;
+            case (Worktype.REPAIR):
+                this.actRepair();
+                break;
+            case (Worktype.CARRY):
+                this.actCarry();
+                break;
+            case (Worktype.UPGRADE):
+                this.actUpgrade();
+                break;
         }
     }
 }
@@ -33,13 +45,14 @@ Creep.prototype.actHarvest = function () {
     const mySource = Game.getObjectById(this.memory.workplace) as Source
     mySource.memory.status.assignedHarvester++
 
-    let target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn;
+    let target = Game.getObjectById(this.memory.currentTarget) as Source | StructureSpawn | StructureContainer | StructureExtension;
 
     if (this.moveByFlowField(target) !== -1) {
         if (this.memory.movingToWorkplace) {
             this.harvest(target as Source);
         } else {
-            if (this.transfer(target as StructureSpawn, RESOURCE_ENERGY) === 0) {
+            target = target as StructureSpawn | StructureContainer | StructureExtension
+            if (this.transfer(target, RESOURCE_ENERGY) === 0) {
                 (Game.getObjectById(this.memory.workplace) as Source).updateStatistics(Math.min((target as StructureSpawn).energyCapacity - (target as StructureSpawn).energy, this.carry[RESOURCE_ENERGY]));
             }
             if (this.ticksToLive as number + Math.floor(600 / this.body.length) < 1500 && !(target as StructureSpawn).spawning) {
@@ -50,22 +63,25 @@ Creep.prototype.actHarvest = function () {
         const carrySum = _.sum(this.carry)
         if (this.memory.movingToWorkplace && this.carryCapacity === carrySum) {
             this.memory.movingToWorkplace = false
-            this.memory.currentTarget = this.getDropoff();
+            this.memory.currentTarget = this.getDropoff(RESOURCE_ENERGY);
         } else if (!this.memory.movingToWorkplace && 0 === _.sum(this.carry)) {
             this.memory.movingToWorkplace = true;
             this.memory.currentTarget = this.memory.workplace;
         }
     }
-
-    // this.room.visual.fluid(RESOURCE_ENERGY, this.pos.x, this.pos.y, (carrySum / this.carryCapacity) / 2 + 0.5)
 }
 
-Creep.prototype.getDropoff = function () {
+Creep.prototype.getDropoff = function (type) {
     const site = this.room.turnCache.structure.energyDropoff[0];
     return site.id;
 }
 
-Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
+Creep.prototype.getStorage = function (type) {
+    const site = this.room.turnCache.structure.energyDropoff[0];
+    return site.id;
+}
+
+Creep.prototype.moveByFlowField = function (target: Source | StructureSpawn | StructureContainer | StructureExtension) {
     const flowQueue = target.pos.getFlowFieldList(target.memory.navigation.flowFieldQueue, target.memory.navigation.flowField, this.pos);
     if (flowQueue[0].dist !== 1) {
         let lastEntryCost = 0;
@@ -73,7 +89,7 @@ Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
         for (const queueEntry of flowQueue) {
             let next = this.pos.getNeighbour(queueEntry.dir);
             if (queueEntry.cost === lastEntryCost) {
-                if (next !== undefined && next.isFreeToWalk() && this.room.turnCache.creepTargets[next.x][next.y] === 0) {
+                if (next !== undefined && next.isFreeToWalk() && this.room.turnCache.creepMoveTargets[next.x][next.y] === 0) {
                     sameCostField.push(queueEntry)
                 }
             } else {
@@ -81,7 +97,7 @@ Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
                     break;
                 } else {
                     sameCostField = [] as FlowFieldEntry[];
-                    if (next !== undefined && next.isFreeToWalk() && this.room.turnCache.creepTargets[next.x][next.y] === 0) {
+                    if (next !== undefined && next.isFreeToWalk() && this.room.turnCache.creepMoveTargets[next.x][next.y] === 0) {
                         sameCostField.push(queueEntry)
                     }
                 }
@@ -93,7 +109,7 @@ Creep.prototype.moveByFlowField = function (target: StructureSpawn | Source) {
             const next = this.pos.getNeighbour(sameCostField[idx].dir) as RoomPosition;
             const moveStatus = this.move(sameCostField[idx].dir);
             if (moveStatus === 0) {
-                this.room.turnCache.creepTargets[next.x][next.y]++;
+                this.room.turnCache.creepMoveTargets[next.x][next.y]++;
             }
             return -1
         } else {

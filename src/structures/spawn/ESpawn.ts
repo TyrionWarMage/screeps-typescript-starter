@@ -55,7 +55,13 @@ StructureSpawn.prototype.initMemory = function () {
             flowField: flowField,
             flowFieldQueue: flowFieldQueue,
             freeNeighbours: this.pos.getWalkableNeighbours().length,
+            isValid: true,
         };
+
+        this.memory.status = {
+            availableBuilder: 0,
+            availableCarry: 0,
+        }
         this.memory.spawnQueue = [];
         this.memory.renewQueue = [];
 
@@ -125,7 +131,7 @@ StructureSpawn.prototype.init = function () {
 }
 
 StructureSpawn.prototype.isAvailable = function () {
-    return this.spawnQueue.length === 0 && !this.spawning
+    return this.spawnQueue.length === 0 && !this.spawning && this.repairQueue.length === 0
 }
 
 StructureSpawn.prototype.preTask = () => {

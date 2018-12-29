@@ -13,4 +13,5 @@ interface NavigationMemory {
     flowField: FlowFieldEntry[][][];
     flowFieldQueue: FlowFieldQueueEntry[];
     freeNeighbours: number;
+    isValid: boolean;
 }

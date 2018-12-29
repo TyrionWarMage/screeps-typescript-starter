@@ -1,12 +1,14 @@
+interface SourceStatusMemory {
+    hasRoad: boolean;
+    nextContainer: string | undefined;
+    assignedHarvester: number;
+    maxHarvester: number;
+
+}
 interface SourceMemory {
     navigation: NavigationMemory;
     initiated: boolean;
-    status: {
-        hasRoad: boolean;
-        nextContainer: string | undefined;
-        assignedHarvester: number;
-        maxHarvester: number;
-    }
+    status: SourceStatusMemory
     statistics: {
         times: number[];
         amounts: number[];
