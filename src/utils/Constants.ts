@@ -13,8 +13,8 @@ export enum Worktype {
 }
 
 export enum Finalize {
-    BUILD_SOURCE_ROAD,
-    BUILD_SOURCE_CONTAINER,
+    BUILD_TARGETED_ROAD,
+    BUILD_TARGETED_CONTAINER,
     NO_FINALIZE
 }
 
