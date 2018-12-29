@@ -16,7 +16,7 @@ export class EconomyController {
 
     public init() {
         this.unitConfig.init();
-        this.unitConfig.computeAllConfigurations();
+        this.unitConfig.computeAllConfigurations(this.room.memory.unitConfiguration);
         this.unitConfig.removeConfiguration(Worktype.BUILD, 0);
         this.unitConfig.removeConfiguration(Worktype.CARRY, 0);
         for (const source of this.room.turnCache.environment.sources) {

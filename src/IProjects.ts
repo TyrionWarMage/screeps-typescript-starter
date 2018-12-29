@@ -1,10 +1,10 @@
 interface UnitConfigurationControllerInterface {
-    computeCarry(): UnitConfig;
-    computeBuilder(): UnitConfig;
+    computeCarry(allCfg: AllUnitConfigurations): void;
+    computeBuilder(allCfg: AllUnitConfigurations): void;
 
-    computeHarvesterForSource(sourceMemory: SourceMemory, sourcePos: RoomPosition): UnitConfig;
+    computeHarvesterForSource(allCfg: AllUnitConfigurations, sourceMemory: SourceMemory, sourcePos: RoomPosition, sourceid: string): void;
 
-    computeAllConfigurations(): void;
+    computeAllConfigurations(unitCfg: { configurations: AllUnitConfigurations, lastEnergyValue: number }): void;
 
     removeConfiguration(type: Worktype, version: number, sourceid?: string): void;
 

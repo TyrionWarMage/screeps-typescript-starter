@@ -81,42 +81,36 @@ export class UnitConfigurationController implements UnitConfigurationControllerI
         return workoptions;
     }
 
-    public computeCarry() {
+    public computeCarry(allConfigs: AllUnitConfigurations) {
         // ToDo
-        return this.getEmptyConfig()
     }
 
-    public computeBuilder() {
+    public computeBuilder(allConfigs: AllUnitConfigurations) {
         const newEntry = this.computeWorker(Worktype.BUILD, 1, this.room.energyCapacityAvailable, Constants.BUILDER_TRAVEL_DIST, Constants.BUILDER_TRAVEL_COST)
-        return newEntry;
+        newEntry.version = allConfigs[Worktype.BUILD][allConfigs[Worktype.BUILD].length - 1].version + 1;
+        allConfigs[Worktype.BUILD].push(newEntry)
     }
 
-    public computeHarvesterForSource(sourceMemory: SourceMemory, sourcePos: RoomPosition) {
+    public computeHarvesterForSource(allConfigs: AllUnitConfigurations, sourceMemory: SourceMemory, sourcePos: RoomPosition, sourceid: string) {
         const spawn = this.room.turnCache.structure.spawns[0];
         const flowFieldEntry = sourcePos.getFlowFieldList(sourceMemory.navigation.flowFieldQueue, sourceMemory.navigation.flowField, spawn.pos)[0]
         const newEntry = this.computeWorker(Worktype.HARVEST, 2, this.room.energyCapacityAvailable, flowFieldEntry.dist, flowFieldEntry.cost)
-        return newEntry;
+        if (!newEntry.modules.equal(allConfigs.perSource[sourceid][allConfigs.perSource[sourceid].length - 1].modules)) {
+            newEntry.version = allConfigs.perSource[sourceid][allConfigs.perSource[sourceid].length - 1].version + 1;
+            allConfigs.perSource[sourceid].push(newEntry);
+        }
     }
 
-    public computeAllConfigurations() {
+    public computeAllConfigurations(unitCfg: { configurations: AllUnitConfigurations, lastEnergyValue: number }) {
         if (this.room.memory.unitConfiguration.lastEnergyValue !== this.room.energyCapacityAvailable) {
 
-            const newEntry = this.computeBuilder();
-            if (!newEntry.modules.equal(this.room.memory.unitConfiguration.configurations[Worktype.BUILD][this.room.memory.unitConfiguration.configurations[Worktype.BUILD].length - 1].modules)) {
-                newEntry.version = this.room.memory.unitConfiguration.configurations[Worktype.BUILD][this.room.memory.unitConfiguration.configurations[Worktype.BUILD].length - 1].version + 1;
-                this.room.memory.unitConfiguration.configurations[Worktype.BUILD].push(newEntry)
-            }
-
+            this.computeBuilder(unitCfg.configurations);
             for (const source of this.room.turnCache.environment.sources) {
-                const newEntry = this.computeHarvesterForSource(source.memory, source.pos);
-                if (!newEntry.modules.equal(this.room.memory.unitConfiguration.configurations.perSource[source.id][this.room.memory.unitConfiguration.configurations.perSource[source.id].length - 1].modules)) {
-                    newEntry.version = this.room.memory.unitConfiguration.configurations.perSource[source.id][this.room.memory.unitConfiguration.configurations.perSource[source.id].length - 1].version + 1;
-                    this.room.memory.unitConfiguration.configurations.perSource[source.id].push(newEntry);
-                }
+                this.computeHarvesterForSource(unitCfg.configurations, source.memory, source.pos, source.id);
             }
 
             console.log(this.room + ':Recomputed unit configurations for ' + this.room.memory.unitConfiguration.lastEnergyValue + ' => ' + this.room.energyCapacityAvailable)
-            this.room.memory.unitConfiguration.lastEnergyValue = this.room.energyCapacityAvailable;
+            unitCfg.lastEnergyValue = this.room.energyCapacityAvailable;
         }
     }
 

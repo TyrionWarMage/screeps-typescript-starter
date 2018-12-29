@@ -100,6 +100,7 @@ export class TargetedRoadBuildProject implements PlanAction {
     public steps: MultiStepProject;
     public name: string;
     private targetid: string;
+    private numSwampTiles: number;
 
     constructor(targetid: string, buildLocations: RoomPosition[]) {
         this.name = "Build road for " + targetid;
@@ -119,6 +120,12 @@ export class TargetedRoadBuildProject implements PlanAction {
             finalizeData: targetid
         };
         this.targetid = targetid;
+        this.numSwampTiles = 0;
+        buildLocations.forEach((x) => {
+            if (x.lookFor(LOOK_TERRAIN)[0] === "swamp") {
+                this.numSwampTiles++;
+            }
+        })
     }
 
 
@@ -133,8 +140,16 @@ export class TargetedRoadBuildProject implements PlanAction {
     public update(state: PlanStateInterface, unitController: UnitConfigurationControllerInterface): PlanStateInterface {
         state.sources[this.targetid].hasRoad = true
 
-        const unitConfig = state.unitConfigurations[Worktype.BUILD][0];
+        let unitConfig = state.unitConfigurations[Worktype.BUILD][0];
+        const availableBuilder = Math.min(state.spawn.availableBuilder, state.spawn.availableBuilder * unitConfig.throughput / state.throughput)
+        const duration = ((this.steps.constructionSteps.length - this.numSwampTiles) * 300 + this.numSwampTiles * 1500) * 5 / availableBuilder
+        state.elapsedTime += duration
+
+        unitConfig = state.unitConfigurations.perSource[this.targetid][0];
         state.throughput += (unitConfig.throughputRoad - unitConfig.throughput) * (Game.getObjectById(this.targetid) as Source).memory.status.assignedHarvester
+
+        const src = Game.getObjectById(this.targetid) as Source
+        unitController.computeHarvesterForSource(state.unitConfigurations, src.memory, src.pos, src.id)
 
         return state
     }
