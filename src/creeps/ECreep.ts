@@ -1,4 +1,4 @@
-import { Worktype } from "../utils/Constants"
+import { Worktype } from "Enums";
 
 Creep.prototype.act = function () {
     if (!this.checkRenew()) {

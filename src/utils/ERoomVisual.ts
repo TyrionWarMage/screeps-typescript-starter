@@ -66,12 +66,20 @@ interface RoomVisual {
     mineral(type: ResourceConstant, x: number, y: number, opacity?: number, size?: number, color?: string[]): void;
     compound(type: ResourceConstant, x: number, y: number, size?: number, color?: string[]): void;
     writeText(text: string, x: number, y: number): void;
+    printBox(x: number, y: number): void;
 }
 RoomVisual.prototype.writeText = function (text, x, y) {
     this.text(text, x, y, {
         font: 0.3,
         color: Color.white[0],
         backgroundPadding: 0,
+    })
+}
+
+RoomVisual.prototype.printBox = function (x: number, y: number, color?: "#ff7b7b", opacity?: 0.5) {
+    this.rect(x - 0.5, y - 0.5, 1.0, 1.0, {
+        fill: color,
+        opacity: opacity
     })
 }
 

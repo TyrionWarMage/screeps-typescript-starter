@@ -1,5 +1,6 @@
 import { EconomyController } from "controller/economy/EconomyController";
 import { Constants } from "utils/Constants";
+import { Finalize } from "Enums";
 
 Object.defineProperties(Room.prototype, {
     initiated: {

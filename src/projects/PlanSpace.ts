@@ -1,3 +1,5 @@
+import { Finalize, Worktype } from "Enums";
+
 export class PlanState implements PlanStateInterface {
     public spawn: SpawnStatusMemory;
     public sources: { [id: string]: SourceStatusMemory };
@@ -133,10 +135,6 @@ export class TargetedRoadBuildProject implements PlanAction {
         return !state.sources[this.targetid].hasRoad && state.spawn.availableBuilder > 0;
     }
 
-    public computeSteps() {
-
-    }
-
     public update(state: PlanStateInterface, unitController: UnitConfigurationControllerInterface): PlanStateInterface {
         state.sources[this.targetid].hasRoad = true
 
@@ -151,6 +149,7 @@ export class TargetedRoadBuildProject implements PlanAction {
         const src = Game.getObjectById(this.targetid) as Source
         unitController.computeHarvesterForSource(state.unitConfigurations, src.memory, src.pos, src.id)
 
+        // ToDo decay rate
         return state
     }
 }

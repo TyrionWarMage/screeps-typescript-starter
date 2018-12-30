@@ -6,7 +6,7 @@ interface UnitConfigurationControllerInterface {
 
     computeAllConfigurations(unitCfg: { configurations: AllUnitConfigurations, lastEnergyValue: number }): void;
 
-    removeConfiguration(type: Worktype, version: number, sourceid?: string): void;
+    removeConfiguration(type: any, version: number, sourceid?: string): void;
 
 };
 

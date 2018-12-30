@@ -56,10 +56,10 @@ Source.prototype.init = function () {
     this.pos.computeFlowField(this.memory.navigation.flowFieldQueue, this.memory.navigation.flowField, (this.room.find(FIND_MY_SPAWNS)[0] as StructureSpawn).pos)
 }
 
-Source.prototype.computeMaxHarvesters = function (config: UnitConfig) {
+Source.prototype.computeMaxHarvesters = function (sourceMem: SourceStatusMemory, config: UnitConfig) {
     const maxByThroughput = this.energyCapacity / config.throughput;
     const maxBySlots = this.memory.navigation.freeNeighbours * ((config.travelTime + config.workTime) / config.workTime);
-    this.memory.status.maxHarvester = Math.floor(Math.min(maxBySlots, maxByThroughput));
+    sourceMem.maxHarvester = Math.floor(Math.min(maxBySlots, maxByThroughput));
 }
 
 Source.prototype.updateStatistics = function (amount: number) {

@@ -1,4 +1,4 @@
-import { Worktype } from "../../utils/Constants"
+import { Worktype } from "Enums";
 
 Object.defineProperties(StructureSpawn.prototype, {
     initiated: {

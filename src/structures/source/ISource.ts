@@ -19,7 +19,7 @@ interface Source {
     initiated: boolean;
     memory: SourceMemory;
     init(): void;
-    computeMaxHarvesters(config: UnitConfig): void;
+    computeMaxHarvesters(sourceMem: SourceStatusMemory, config: UnitConfig): void;
     updateStatistics(amount: number): void;
 }
 

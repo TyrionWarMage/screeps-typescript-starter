@@ -2,6 +2,7 @@ import { UnitConfigurationController } from "../unit/UnitConfiguration";
 import { ConstructionController } from "../construction/ConstructionController";
 import { PlanState, HarvesterBuildAction } from "projects/PlanSpace";
 import { GreedyPlanner } from "projects/Planner";
+import { Worktype } from "Enums";
 
 export class EconomyController {
     private room: Room;
@@ -22,7 +23,7 @@ export class EconomyController {
         for (const source of this.room.turnCache.environment.sources) {
             this.unitConfig.removeConfiguration(Worktype.HARVEST, 0, source.id);
             const harvesterConfig = this.room.memory.unitConfiguration.configurations.perSource[source.id];
-            source.computeMaxHarvesters(harvesterConfig[harvesterConfig.length - 1]);
+            source.computeMaxHarvesters(source.memory.status, harvesterConfig[harvesterConfig.length - 1]);
         }
     }
 
@@ -33,12 +34,12 @@ export class EconomyController {
             planActions.push(new HarvesterBuildAction(source.id, harvesterConfig[harvesterConfig.length - 1].cost));
         }
         return planActions
-
     }
 
     public getProject() {
         let actionSpace = [] as PlanAction[];
         actionSpace = actionSpace.concat(this.getHarvesterPlanActions());
+        actionSpace = actionSpace.concat(this.constructionController.createSourceRoadProjects());
 
         const sources = {} as { [id: string]: SourceStatusMemory };
         let observedTP = 1;
